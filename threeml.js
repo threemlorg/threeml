@@ -194,13 +194,13 @@ var ThreeML = function (element) {
 	//////////////////////////////////////////
 	//Global event handling
 	//var raycaster = new THREE.Raycaster();
-	var mouse = new THREE.Vector2();
+	//var mouse = new THREE.Vector2();
 	var mousePos;
 	var lastMousePos;
 	var allObjects = [];
 	var avatarheight = 1.7;
 	var rayCastDirection;
-	var cameraTarget;
+	//var cameraTarget;
 	function onWindowResize() {
 
 		camera.aspect = window.innerWidth / window.innerHeight;
@@ -346,7 +346,8 @@ var ThreeML = function (element) {
 	function fillAllObjects() {
 		allObjects = [];
 		scene.traverse(function (child) { allObjects.push(child); });
-    }
+	}
+	var hoverObject;
 	function check3dLinkForCursor() {
 		var intersected = getRayCastedObject();
 		var c = 'default';
@@ -360,8 +361,24 @@ var ThreeML = function (element) {
 			}
 			else if (intersected.walk) {
 				c = 'url(/steps.cur),auto';
-        }
+			}
+			if (intersected.hover) {
+				if (!intersected.hoverObject) {
+					intersected.hoverObject = scene.getObjectByName(intersected.hover);
+				}
+				if (intersected.hoverObject) {
+					if (hoverObject) {
+						hoverObject.visible = false;
+                    }
+					hoverObject = intersected.hoverObject;
+					hoverObject.visible = true;
+				}
+			}
 		}
+		else if (hoverObject) {
+			hoverObject.visible = false;
+			hoverObject = undefined;
+        }
 		document.body.style.cursor =c;
     }
 	//////////////////////////////////////////
@@ -396,6 +413,8 @@ var ThreeML = function (element) {
 		var controls;
 		var materials = [];
 		var canvaszindex = 0;
+		var audioContext;
+		
 		init(threenode);
 		animate();
 
@@ -429,7 +448,8 @@ var ThreeML = function (element) {
 			rendererMain.domElement.style.top = 0;
 			rendererMain.domElement.style.zIndex = 1;
 			rendererMain.setSize(innerWidth, innerHeight);
-			rendererMain.xr.enabled=true;
+			rendererMain.xr.enabled = true;
+			rendererMain.shadowMapEnabled = true;
 			rendererCSS.domElement.appendChild(rendererMain.domElement);
 
 			var light = new THREE.AmbientLight(0x555555);
@@ -630,6 +650,9 @@ var ThreeML = function (element) {
 				case 'directionallight':
 					 return handleDirectionalLight(ele, parent);
 					break;
+				case 'pointlight':
+					return handlePointLight(ele, parent);
+					break;
 				case 'ambientlight':
 					return handleAmbientionalLight(ele, parent);
 					break;
@@ -645,35 +668,97 @@ var ThreeML = function (element) {
 				case 'group':
 					tr = handleGroup(ele, parent);
 					break;
-				case 'sound':
-					return handleSound(ele, parent);
+				case 'media':
+					return handleMediaObject(ele);
 					
 					break;
 			}
 			doParseChildren(ele, tr);
 		}
-		function handleSound(ele, parent) {
+		function getWorldPosition(obj) {
+			obj.updateMatrixWorld();
+			var p = new THREE.Vector3();
+			p.setFromMatrixPosition(obj.matrixWorld);
+			return p;
+		}
+		function handleMediaObject(ele) {
 			var att = getAttributes(ele);
+			if (att.suspend && toB(att.suspend) && audioContext) {
+				audioContext.suspend();
+			}
+        }
+		function activateAudio(obj, att) {
 			if (att.url) {
-				var x = document.createElement("AUDIO");
-				x.setAttribute("src", att.url);
-				x.setAttribute("controls", "controls");
-				if (att.loop && att.loop == "true") {
-					//x.setAttribute("loop", "true");
-					x.loop = true;
-				}
-				if (att.volume) {
-					x.volume = toN(att.volume)
-				}
-				if (att.autoplay && att.autoplay == 'true') {
-					x.load();
-					//x.addEventListener("load", function () {
-					//	this.play();
-					//}, true);
-                }
-				document.body.appendChild(x);
+				if (!audioContext) {
+					audioContext = new AudioContext();
 
-				
+					// Create a AudioGainNode to control the main volume.
+					var mainVolume = audioContext.createGain();
+					// Connect the main volume node to the context destination.
+					mainVolume.connect(audioContext.destination);
+					if (att.volume) {
+						mainVolume.gain.value = toN(att.volume);
+					}
+					// Create an object with a sound source and a volume control.
+					obj.sound = {};
+					obj.sound.source = audioContext.createBufferSource();
+					obj.sound.volume = audioContext.createGain();
+					
+					if (att.volumetric && toB(att.volumetric)) {
+						var panner = audioContext.createPanner();
+						panner.panningModel = 'HRTF';
+						obj.sound.panner = panner;
+						// Instead of hooking up the volume to the main volume, hook it up to the panner.
+						obj.sound.volume.connect(obj.sound.panner);
+						//// And hook up the panner to the main volume.
+						obj.sound.panner.connect(mainVolume);
+						obj.sound.source.connect(obj.sound.volume);
+						var p = getWorldPosition(obj);
+
+						obj.sound.panner.setPosition(p.x, p.y, p.z);
+					}
+					else {
+
+						// Connect the sound source to the volume control.
+						obj.sound.source.connect(obj.sound.volume);
+						// Hook up the sound volume control to the main volume.
+						obj.sound.volume.connect(mainVolume);
+					}
+
+					// Make the sound source loop.
+					var loop = false;
+					if (att.loop) {
+						loop = toB(att.loop);
+                    }
+					obj.sound.source.loop = loop;
+
+					// Load a sound file using an ArrayBuffer XMLHttpRequest.
+					var request = new XMLHttpRequest();
+					request.open("GET", att.url, true);
+					request.responseType = "arraybuffer";
+					request.onload = function (e) {
+
+						// Create a buffer from the response ArrayBuffer.
+						audioContext.decodeAudioData(this.response, function onSuccess(buffer) {
+							obj.sound.buffer = buffer;
+
+							// Make the sound source use the buffer and start playing it.
+							obj.sound.source.buffer = obj.sound.buffer;
+							obj.sound.source.start(audioContext.currentTime);
+						}, function onFailure() {
+							alert("Decoding the audio buffer failed");
+						});
+					};
+					request.send();
+				}
+				else {
+					if (audioContext.state == 'running') {
+						audioContext.suspend();
+					}
+					else {
+						audioContext.resume();
+                    }
+                }
             }
 		}
 		function handleGroup(ele, parent) {
@@ -685,7 +770,6 @@ var ThreeML = function (element) {
 			return obj;
 		}
 		function handleGltfLoader(ele, parent) {
-			var att = getAttributes(ele);
 			var att = getAttributes(ele);
 			if (att.name) {
 				var tobj = scene.getObjectByName(att.name);
@@ -789,7 +873,7 @@ var ThreeML = function (element) {
 					console.log('Duplicate attempt to initiate ' + att.name + '.');
 					return tobj;
                 }
-            }
+			}
 			var holder = new THREE.Group();
 			parent.add(holder);
 			if (ele.innerHTML) {
@@ -808,14 +892,25 @@ var ThreeML = function (element) {
 			div.style.width = w + 'px';
 			div.style.height = h + 'px';
 
-			div.style.backgroundColor = '#000';
+
+		    div.style.backgroundColor = '#000';
+
 			div.className = 'tml_panel';
 
 			const div_bar = document.createElement('div');
 			div_bar.style.width = '100%';
 			div_bar.style.height = '50px';
 			div_bar.className = 'tml_bar';
-			div_bar.style.backgroundColor = bgc;
+			if (!(att.custombarcolor && toB(att.custombarcolor))) {
+				div_bar.style.backgroundColor = bgc;
+			}
+			if (att.panelbar) {
+				if (!toB(att.panelbar)) {
+					div_bar.style.display = 'none';
+                }
+            }
+
+
 			const div_left_menu = document.createElement('div');
 			div_left_menu.style.width = '170px';
 			div_left_menu.style.display = 'inline-block';
@@ -823,6 +918,12 @@ var ThreeML = function (element) {
 			const div_hb = getImageBarButton('home', 'Home', Images.Home, bgc);
 			
 			div_hb.style.float = 'left';
+			if (att.homebutton) {
+				if (!toB(att.homebutton)) {
+					div_hb.style.display = 'none';
+				}
+			}
+
 			div_left_menu.appendChild(div_hb);
 			//left button:
 			const div_lb = getImageBarButton('left', 'Previous', Images.ArrowLeft, bgc);
@@ -1134,6 +1235,20 @@ var ThreeML = function (element) {
 			return light;
 
 		}
+		function handlePointLight(ele, parent) {
+			var att = getAttributes(ele);
+			//if (att.name) {
+			//	var tobj = scene.getObjectByName(att.name);
+			//	if (tobj) {
+			//		return tobj;
+			//	}
+			//}
+			var light = new THREE.PointLight();
+			setCommonAttributes(light, att);
+			parent.add(light);
+			return light;
+
+		}
 		function handleAmbientionalLight(ele, parent) {
 			var att = getAttributes(ele);
 			if (att.name) {
@@ -1281,9 +1396,9 @@ var ThreeML = function (element) {
 			checkevents(ele, obj);
 			setCommonAttributes(obj, att);
 			if (att.target) {
-				var obj = scene.getObjectByName(att.target);
-				if (obj) {
-					light.target = obj;
+				var objt = scene.getObjectByName(att.target);
+				if (objt) {
+					obj.target = objt;
 				}
 			}
 
@@ -1322,6 +1437,14 @@ var ThreeML = function (element) {
 						handleDraggable(obj, child);
 						hasMouseEvent = true;
 						break;
+					case 'hover':
+						handleHover(obj, child);
+						//hasMouseEvent = true;
+						break;
+					case 'media':
+						handleMedia(obj, child);
+						hasMouseEvent = true;
+						break;
 				}
 			}
 			return hasMouseEvent;
@@ -1347,7 +1470,41 @@ var ThreeML = function (element) {
 				return destination.quaternion;
 			}
 		})();
+		function handleMedia(obj, ele) {
+			var att = getAttributes(ele);
 
+			var f = function () {
+				activateAudio(obj, att);
+			}
+			addCallbackFunction(obj, f);;
+			if (att.volumetric && toB(att.volumetric)) {
+				//obj.sound = {};
+				//obj.sound.volume = att.volume ? toN(att.volume) : 1;
+				checkObjectUpdateArray(obj);
+				var f2 = function () {
+					if (audioContext && obj.sound) {
+						//if (!obj.sound.panner) {
+						//	obj.sound.panner = audioContext.createPanner();
+						//	// Instead of hooking up the volume to the main volume, hook it up to the panner.
+						//	obj.sound.volume.connect(obj.sound.panner);
+						//	// And hook up the panner to the main volume.
+						//	obj.sound.panner.connect(mainVolume);
+						//}
+						var p = getWorldPosition(obj);
+						obj.sound.panner.setPosition(p.x, p.y, p.z);
+
+
+
+						var p = new THREE.Vector3();
+						p.setFromMatrixPosition(camera.matrixWorld);
+						// And copy the position over to the listener.
+						audioContext.listener.setPosition(p.x, p.y, p.z);
+
+					}
+				}
+				obj.updateArray.push(f2);
+            }
+		}
 
 		function handleLink(obj, ele) {
 			var att = getAttributes(ele);
@@ -1405,7 +1562,10 @@ var ThreeML = function (element) {
 			if (att.cameradistance) {
 				cameradistance = Number(att.cameradistance);
 			}
-
+			var fromgroup;
+			if (att.fromgroup) {
+				fromgroup = scene.getObjectByName(att.fromgroup);
+            }
 			obj.presentProp = {};
 
 			obj.presentProp.speed = speed;
@@ -1467,11 +1627,19 @@ var ThreeML = function (element) {
 			}
 			obj.updateArray.push(f);
 			obj.present = function (doPresent) {
+				if (fromgroup && doPresent) {
+					for (var n = 0; n < fromgroup.children.length; n++) {
+						if (obj.name != fromgroup.children[n].name && fromgroup.children[n].presentProp && fromgroup.children[n].presentProp.isPresenting) {
+							fromgroup.children[n].present(false);
+						}
+                    }
+                }
 				obj.presentProp.isPresenting = doPresent;
 				obj.presentProp.isRunning = true;
 				if (obj.children.length > 0) {
 					obj.children[0].element.style.zIndex = obj.presentProp.isPresenting ? 10 : canvaszindex-1;
 				}
+				
 
 			}
 			if (obj.children.length > 0 && obj.children[0].element) { //is htmlPanel
@@ -1522,6 +1690,12 @@ var ThreeML = function (element) {
         }
 		function handleWalk(obj, ele) {
 			obj.walk = true;
+		}
+		function handleHover(obj, ele) {
+			var att = getAttributes(ele);
+			if (att.target) {				
+				obj.hover = att.target;
+			}
 		}
 		function handleLookAt(obj, ele) {
 			var att = getAttributes(ele);
@@ -1749,7 +1923,7 @@ var ThreeML = function (element) {
 			if (att.receiveshadow) {
 				obj.receiveShadow = toB(att.receiveshadow);
 				if (obj.receiveShadow) {
-					obj.scene.traverse(function (node) {
+					obj.traverse(function (node) {
 
 						if (node.isMesh) { node.receiveShadow = true; }
 
