@@ -761,11 +761,32 @@ var ThreeML = function (element) {
                 }
             }
 		}
+		function getRandowmName() {
+			return "name_" + Math.random();
+        }
 		function handleGroup(ele, parent) {
 			var att = getAttributes(ele);
 			var obj = new THREE.Group();
 			setCommonAttributes(obj, att);
 			checkevents(ele, obj);
+			checkObjectUpdateArray(obj);
+			if (att.url) {
+				obj.loaded = false;
+				obj.url = att.url;
+				if (!obj.name || obj.name.length == 0) {
+					obj.name = getRandowmName();
+					ele.setAttribute("name", obj.name);
+                }
+				var f = function () {
+					if (!obj.loaded) {
+						self.loadInGroup(obj.name, obj.url);
+						obj.loaded = true;
+						}
+					}
+
+				
+				obj.updateArray.push(f);
+			}
 			parent.add(obj);
 			return obj;
 		}
@@ -880,13 +901,26 @@ var ThreeML = function (element) {
 				att.html = ele.innerHTML.replace('<!--', '').replace('-->', '');
             }
 			const div = document.createElement('div');
-			var w = 1920;
-			var h = 1080;
+			var dw = 1920;
+			var dh = 1080;
+			var w = dw;
+			var h = dh;
+			var wf = 1;
+			var hf = 1;
+			var panelBarHeight = 50;
+			var panelbar = true;
+			if (att.panelbar) {
+				panelbar = toB(att.panelbar);
+				}
+
 			if (att.width) {
 				w = att.width;
+				wf = Number(w) / dw;
 			}
-			if (att.heigth) {
-				w = att.heigth;
+			if (att.height) {
+				h = att.height;
+				var corr = panelbar ? 0 : panelBarHeight;
+				hf = (Number(h)-corr) / dh;
 			}
 
 			div.style.width = w + 'px';
@@ -899,16 +933,16 @@ var ThreeML = function (element) {
 
 			const div_bar = document.createElement('div');
 			div_bar.style.width = '100%';
-			div_bar.style.height = '50px';
+			div_bar.style.height = panelBarHeight+'px';
 			div_bar.className = 'tml_bar';
 			if (!(att.custombarcolor && toB(att.custombarcolor))) {
 				div_bar.style.backgroundColor = bgc;
 			}
-			if (att.panelbar) {
-				if (!toB(att.panelbar)) {
-					div_bar.style.display = 'none';
-                }
+
+			if (!panelbar) {
+				div_bar.style.display = 'none';
             }
+
 
 
 			const div_left_menu = document.createElement('div');
@@ -973,13 +1007,14 @@ var ThreeML = function (element) {
 			holder.add(obj);
 
 			//add transparantplane
-			var geometry = new THREE.PlaneGeometry(1.53,0.92);
+			var geometry = new THREE.PlaneGeometry(1.53*wf,0.92*hf);
 			var material = new THREE.MeshBasicMaterial();
 			material.color.set('black'); //red
 			material.opacity = 0;
 			material.blending = THREE.NoBlending;
 			var p = new THREE.Mesh(geometry, material);
-			p.position.set(0, -0.027, 0);
+			var pcorr = panelbar ? -0.027 : 0;
+			p.position.set(0, pcorr, 0);
 
 			holder.add(p);
 			p.eventParent = holder;
@@ -1221,7 +1256,6 @@ var ThreeML = function (element) {
 			}
 			var light = new THREE.DirectionalLight();
 			setCommonAttributes(light, att);
-			light.castShadow = true;
 			if (att.target) {
 				var obj = scene.getObjectByName(att.target);
 				if (obj) {
@@ -1418,6 +1452,9 @@ var ThreeML = function (element) {
 					case 'pulse':
 						handlePulse(obj, child);
 						break;
+					case 'blink':
+						handleBlink(obj, child);
+						break;
 					case 'present':
 						handlePresent(obj, child);
 						hasMouseEvent = true;
@@ -1517,7 +1554,14 @@ var ThreeML = function (element) {
 						}
 						else {
 							var replace = att.replace ? att.replace : false;
-							self.loadInTarget(att.target, att.url+'?A=1', replace);
+							var handler = self;
+							if (att.handler) {
+								var thandler = eval(att.handler);
+								if (thandler) {
+									handler = thandler;
+                                }
+                            }
+							handler.loadInTarget(att.target, att.url+'?A=1', replace);
 						}
 					}
 					else {
@@ -1711,6 +1755,36 @@ var ThreeML = function (element) {
 				console.log("Object '" + att.target+"' not found as suitable target.")
             }
 		}
+		function handleBlink(obj, ele) {
+			var att = getAttributes(ele);
+			checkObjectUpdateArray(obj);
+			var speed = 0.01;
+			var random = false;
+			if (att.speed) {
+				speed = Number(att.speed);
+			}
+			if (att.random) {
+				random = toB(att.random);
+			}
+			obj.blink = {};
+			obj.blink.speed = speed;
+			obj.blink.random = random;
+			obj.blink.time = 0;
+			obj.blink.fact = 1;
+			var f = function () {
+				obj.blink.time += speed;
+				var fact = 1;
+				if (obj.blink.time > obj.blink.fact) {
+					obj.blink.time = 0;
+					obj.visible = !obj.visible
+					if (random) {
+						obj.blink.fact = Math.random();
+					}
+                }
+			}
+			obj.updateArray.push(f);
+		}
+
 		function handlePulse(obj, ele) {
 			var att = getAttributes(ele);
 			checkObjectUpdateArray(obj);
@@ -1800,7 +1874,13 @@ var ThreeML = function (element) {
 			mat.color.setRGB(c.x, c.y, c.z);
 		}
 		mat.flatShading = true;
-		
+		if (att.emissive) {
+			var e = parse3DVector(att.color);
+			mat.emissive.setRGB(e.x, e.y, e.z);
+			if (att.emissiveintensity) {
+				mat.emissiveIntensity = toN(att.emissiveintensity);
+			}
+        }
 		if (att.url) {
 			try {
 				const loader = new THREE.TextureLoader();
@@ -1808,6 +1888,14 @@ var ThreeML = function (element) {
 			}
 			catch (x) {  console.log(x); }
 		}
+		if (att.normalmap) {
+			try {
+				const loader2 = new THREE.TextureLoader();
+				mat.normalMap = loader2.load(att.normalmap);
+			}
+			catch (x) { console.log(x); }
+		}
+		
 		mat.blending = THREE.NoBlending;
 		if (att.side) {
 			switch (att.side.toLowerCase()) {
