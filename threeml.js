@@ -2,15 +2,11 @@
 import * as THREE from './build/three.module.js';
 import { GLTFLoader } from './controls/GLTFLoader.js';
 import { CSS3DObject, CSS3DRenderer } from './renderers/CSS3DRenderer.js';
-import { DefaultFont } from './fonts/defaultfont.js'
+import {DefaultFont} from './fonts/defaultfont.js'
 import { VRButton } from './controls/VRButton.js';
 import { GUI } from './controls/dat.gui.module.js';
 import { FlyControls } from './controls/FlyControls.js';
 import { Reflector } from './controls/Reflector.js';
-
-/**
- * Based on http://www.v-slam.org/
- */
 
 var ThreeScenes = []
 var camera;
@@ -20,6 +16,7 @@ var renderer;
 var mixer = null;
 var clock = new THREE.Clock();
 var controls;
+
 
 var ThreeML = function (element) {
 	const loader = new GLTFLoader();
@@ -50,7 +47,7 @@ var ThreeML = function (element) {
 
 	this.getScene = function () {
 		return scene;
-	}
+    }
 	this.getCamera = function () {
 		return camera;
 	}
@@ -68,17 +65,17 @@ var ThreeML = function (element) {
 			doShowObject(object, doShow);
 		}
 	}
-	function doShowObject(object, doShow) {
+	function doShowObject(object, doShow){
 		if (object) {
 			object.visible = doShow;
-			var disp = doShow ? '' : 'none';
+//			var disp = doShow ? '' : 'none';
 			for (var n = 0; n < object.children.length; n++) {
 				doShowObject(object.children[n], doShow);
-			}
-
+            }
+		
 
 		}
-	}
+    }
 	this.toggle = function (objectName) {
 		for (var n = 0; n < scenes.length; n++) {
 			var scene = scenes[n];
@@ -90,7 +87,7 @@ var ThreeML = function (element) {
 			}
 		}
 	}
-	this.showFromGroup = function (groupName, objectName) {
+	this.showFromGroup=function(groupName, objectName){
 		for (var n = 0; n < scenes.length; n++) {
 			var scene = scenes[n];
 			var group = scene.getObjectByName(groupName);
@@ -102,7 +99,7 @@ var ThreeML = function (element) {
 			}
 		}
 	}
-	this.present = function (objectName, doPresent = undefined) {
+	this.present = function (objectName, doPresent=undefined) {
 		var obj = scene.getObjectByName(objectName);
 		if (obj && obj.present) {
 			if (!doPresent) {
@@ -137,10 +134,10 @@ var ThreeML = function (element) {
 
 				doClearChildren(group.children[n]);
 			}
-
+			
 		}
 	}
-
+	
 	function doClearChildren(obj) {
 		if (obj) {
 			for (var n = 0; n < obj.children.length; n++) {
@@ -151,12 +148,12 @@ var ThreeML = function (element) {
 	}
 	function clearCh(obj) {
 		if (obj) {
-			for (var n = 0; n < obj.children.length; n++) {
+			for (var n = 0; n < obj.children.length;n++) {
 				clearCh(obj.children[n]);
 			}
 			if (obj.geometry) {
 				obj.geometry.dispose();
-			}
+            }
 			var p = obj.parent;
 			p.remove(obj);
 		}
@@ -164,12 +161,12 @@ var ThreeML = function (element) {
 	this.clearGoupChildren = function (objName) {
 		var group = scene.getObjectByName(objName);
 		doClearGoupChildren(group);
-	}
+    }
 	function doClearGoupChildren(group) {
 		while (group.children.length > 0) {
 			doClearGoupChildren(group.children[0]);
 			group.remove(group.children[0]);
-		}
+        }
 	}
 	this.loadCodeInGroup = function (groupName, code, replace = true) {
 		var group = scene.getObjectByName(groupName);
@@ -190,7 +187,7 @@ var ThreeML = function (element) {
 		var group = scene.getObjectByName(targetName);
 		var domgroup = document.getElementsByName(targetName);
 		if (group && domgroup) {
-			if (domgroup.length === 2 && domgroup[1].localName === "iframe") {
+			if (domgroup.length===2 && domgroup[1].localName==="iframe") {
 				domgroup[1].src = url;
 			}
 			else {
@@ -215,8 +212,8 @@ var ThreeML = function (element) {
 				};
 			}
 		}
-	}
-
+    }
+	
 
 	//////////////////////////////////////////
 	//Global event handling
@@ -241,7 +238,7 @@ var ThreeML = function (element) {
 			return obj.point;
 		}
 		return getPointFromChildren(obj);
-	}
+    }
 	function getPointFromChildren(obj) {
 
 		for (var n = 0; n < obj.children.length; n++) {
@@ -251,8 +248,8 @@ var ThreeML = function (element) {
 			var point = getPointFromChildren(obj.children[n]);
 			if (point) {
 				return point;
-			}
-		}
+            }
+        }
 	}
 	var mouseDown = false;
 	function onMouseDown(event) {
@@ -271,10 +268,10 @@ var ThreeML = function (element) {
 			if (p) {
 				cursor3d.position.set(p.x, p.y, p.z);
 
-			}
+            }
 			cursor3d.visible = true;
-		}
-	}
+        }
+    }
 	function onMouseUp(event) {
 		mouseDown = false;
 		if (selectedObject) {
@@ -289,7 +286,7 @@ var ThreeML = function (element) {
 		}
 		else if (navigating == CameraMode.CLICK && rayCastDirection) {
 			cameraTarget = camera.position.clone().add(rayCastDirection.multiplyScalar(100));
-		}
+        }
 		selectedObject = undefined;
 		lastMousePos = undefined;
 		if (cursor3d) {
@@ -310,21 +307,21 @@ var ThreeML = function (element) {
 				}
 			}
 		}
-	}
+    }
 	function onDocumentMouseClick(event) {
 		var intersected = getRayCastedObject();
 		if (intersected) {
 			if (intersected.eventParent) {
 				intersected = intersected.eventParent;
-			}
+            }
 			if (intersected.callback) {
 				event.preventDefault();
 				intersected.callback('click');
 			}
 			else if (intersected.walk) {
 				var point = getPoint(intersected)
-				if (!point) { return; }
-				camera.targetPosition = new THREE.Vector3(point.x, point.y + avatarheight, point.z);
+				if (!point) { return;}
+				camera.targetPosition = new THREE.Vector3(point.x, point.y+avatarheight, point.z);
 				checkObjectUpdateArray(camera);
 				var f = function () {
 					if (camera.targetPosition) {
@@ -334,11 +331,11 @@ var ThreeML = function (element) {
 						}
 						else {
 							camera.position.lerp(camera.targetPosition, 0.01);
-						}
+                        }
 					}
-				}
+                }
 				camera.updateArray.push(f);
-			}
+           }
 		}
 	}
 	function checkObjectUpdateArray(obj) {
@@ -358,17 +355,17 @@ var ThreeML = function (element) {
 			y: event.clientY
 		};
 		return lmousePos;
-	}
+    }
 	function handleMouseMove(event) {
-		var dot, eventDoc, doc, body, pageX, pageY;
-
+		//var dot, eventDoc, doc, body, pageX, pageY;
+		if (!camera) { return;}
 		mousePos = getMousePos(event)
 		if ((selectedObject || (cursor3d && cursor3d.visible)) && lastMousePos) {
 			var divx = lastMousePos.x - mousePos.x;
 			var divy = lastMousePos.y - mousePos.y;
 			mouseDivX = -0.01 * divx;
 			mouseDivY = 0.01 * divy;
-		}
+        }
 		if (selectedObject && selectedObject.position && lastMousePos && (selectedObject.draggable || (selectedObject.eventParent && selectedObject.eventParent.draggable))) {
 
 			if (selectedObject.eventParent) {
@@ -388,7 +385,7 @@ var ThreeML = function (element) {
 			else {
 				cursor3d.position.y += mouseDivY;
 			}
-		}
+        }
 		lastMousePos = mousePos;
 		check3dLinkForCursor();
 	}
@@ -398,8 +395,10 @@ var ThreeML = function (element) {
 	var cursor3d;
 	function getTheMousePos() {
 		var mouse = new THREE.Vector2();
-		mouse.x = (mousePos.x / window.innerWidth) * 2 - 1;
-		mouse.y = - (mousePos.y / window.innerHeight) * 2 + 1;
+		if (mousePos) {
+			mouse.x = (mousePos.x / window.innerWidth) * 2 - 1;
+			mouse.y = - (mousePos.y / window.innerHeight) * 2 + 1;
+		}
 		return mouse;
 
 	}
@@ -415,7 +414,7 @@ var ThreeML = function (element) {
 			intersects[0].object.point = intersects[0].point;
 			return intersects[0].object;
 		}
-	}
+    }
 	function fillAllObjects() {
 		allObjects = [];
 		scene.traverse(function (child) { allObjects.push(child); });
@@ -439,10 +438,10 @@ var ThreeML = function (element) {
 				intersected.callback('hover');
 			}
 		}
-		document.body.style.cursor = c;
+		document.body.style.cursor =c;
 		if (hoverObject && hoverObject.o != intersected) {
 			clearHover();
-		}
+        }
 	}
 	function clearHover() {
 		if (hoverObject && hoverObject.o) {
@@ -460,12 +459,12 @@ var ThreeML = function (element) {
 			}
 			hoverObject = undefined;
 		}
-	}
+    }
 	//////////////////////////////////////////
 
 	function CheckZoom() {
 		let zoom = ((window.outerWidth - 10) / window.innerWidth) * 100;
-		if (zoom < 85) {
+		if (zoom < 95 || zoom>105) {
 			var d = document.createElement('div');
 			d.style.position = 'absolute';
 			d.style.display = 'block';
@@ -477,8 +476,20 @@ var ThreeML = function (element) {
 			d.style.backgroundColor = 'black';
 			d.style.padding = '20px';
 			d.style.width = '80vw';
+			var bt = document.createElement('div');
+			bt.innerHTML = 'X';
+			bt.style.float = 'right';
+			bt.style.cursor = 'pointer';
+			bt.style.fontFamily = 'Arial';
+			bt.style.fontSize = 'small';
+			bt.style.border = 'solid 1pt';
+			bt.style.padding = '2px';
+			bt.addEventListener('click', function () {
+				this.parentElement.style.display = 'none';
+            })
+			d.appendChild(bt);
 			var p = document.createElement('div');
-			p.innerText = 'Please set the zoom of your browser to at least 100% and then reload this page. Otherewise some ThreeML functions might not work correctly';
+			p.innerText = 'Please set the zoom of your browser to 100% and then reload this page. Otherwise some ThreeML functions might not work correctly';
 			d.appendChild(p);
 			var ad = document.createElement('div');
 			ad.style.marginTop = '30px';
@@ -488,39 +499,44 @@ var ThreeML = function (element) {
 			ad.appendChild(a);
 			d.appendChild(ad);
 			document.body.appendChild(d);
-		}
-	}
-
-	CheckZoom();
+        }
+    }
 
 
+	let doCheckZoom = true;
 
 	this.parseThree = function (htmlParent) {
 		if (!htmlParent) {
 			htmlParent = document;
-		}
+        }
 		var threeParts = htmlParent.getElementsByTagName('three');
 		for (var n = 0; n < threeParts.length; n++) {
 			var threeScene;
 			if (ThreeScenes.length == 0) {
-				threeScene = new ThreeScene(threeParts[n], htmlParent);
+				threeScene = new ThreeScene(this, threeParts[n], htmlParent);
 				ThreeScenes.push(threeScene);
 			}
 			else {
 				threeScene = ThreeScenes[0];
-			}
+            }
 			threeScene.parseChildren(threeParts[n]);
+
 			camera.updateMatrixWorld();
+		}
+		if (doCheckZoom) {
+			CheckZoom();
 		}
 	}
 
 
-	var ThreeScene = function (threenode, htmlParent) {
-		var controls;
+	var ThreeScene = function (threeml, threenode, htmlParent) {
+		var flycontrols;
 		var materials = [];
 		var canvaszindex = 0;
 		var audioContext;
-
+		this.threeml = threeml;
+		var youtubePlayers = [];
+		
 		init(threenode, htmlParent);
 		animate();
 
@@ -532,8 +548,8 @@ var ThreeML = function (element) {
 			if (htmlParent.localName == 'div') {
 				innerWidth = parseFloat(htmlParent.style.width);
 				innerHeight = parseFloat(htmlParent.style.height);
-			}
-
+            }
+			
 			camera = new THREE.PerspectiveCamera(50, innerWidth / innerHeight, 0.01, 2000);
 			//camera = new THREE.OrthographicCamera(-0.5 * innerWidth, 0.5 * innerWidth, -0.5 * innerHeight, 0.5 *innerHeight, 0.1, 20000);
 			//camera.position.set(0, 0, 10);
@@ -559,7 +575,7 @@ var ThreeML = function (element) {
 			renderer.shadowMapEnabled = true;
 			rendererCSS.domElement.appendChild(renderer.domElement);
 
-
+		
 			//document.body.appendChild(VRButton.createButton(rendererMain));
 			window.addEventListener('click', onDocumentMouseClick, false);
 			document.addEventListener("mousedown", onMouseDown);
@@ -586,7 +602,7 @@ var ThreeML = function (element) {
 				}
 				else if (event.code == 'ControlLeft') {
 					ctrlKey = true;
-				}
+                }
 			});
 
 		}
@@ -596,8 +612,9 @@ var ThreeML = function (element) {
 		this.parseChildren = function (threenode, group) {
 			if (!group) {
 				group = scene;
-			}
+            }
 			doParseChildren(threenode, group);
+			initYoutubePlayers();
 		}
 		var waitModel;
 		function handleWaitObject(ele, parent) {
@@ -621,31 +638,47 @@ var ThreeML = function (element) {
 					parent.add(waitModel);
 				}
 				waitModel.visible = true;
-			}
+            }
 		}
 		function hideWaitModel(parent) {
 			if (waitModel) {
 				parent.remove(waitModel);
 				waitModel.false = true;
 			}
-		}
+        }
 		function animate() {
 			renderer.setAnimationLoop(doAnimate);
 			//requestAnimationFrame(animate);
 			//doAnimate();
-		}
+		} 
 
-		function doAnimate() {
+		var lasttime = 0
+		var delta = 1;
+		function calculateDelta(time) {
+			//var t=clock.getElapsedTime()
+			var tdelta = time - lasttime;
+			lasttime = time;
+			if (tdelta > 0) {
+				tdelta = tdelta / 7;
+				if (Math.abs(tdelta - delta) < 0.1) {
+					delta = (99 * delta + tdelta) / 100;
+				}
+            }
+			//console.log(delta);
+
+        }
+		function doAnimate(time) {
+			calculateDelta(time);
 			fillAllObjects();
 			checkCam();
 			scene.traverse(obj => {
-				if (typeof obj.update === 'function' && obj.type != 'CubeCamera') {
+				if (typeof obj.update === 'function' && obj.type!='CubeCamera') {
 					obj.update();
 
 				}
 				if (obj.material && obj.material.envMap) {
 					obj.visible = false;
-					cubeCamera.position.set(obj.position.x, obj.position.y, obj.position.z);
+					cubeCamera.position.set(obj.position.x, obj.position.y, obj.position.z) ;
 					cubeCamera.update(renderer, scene);
 					obj.visible = true;
 				}
@@ -656,16 +689,16 @@ var ThreeML = function (element) {
 			if (camera.update) {
 				camera.update();
 			}
-			if (controls) {
+			if (flycontrols) {
 				const delta = clock.getDelta();
-				controls.movementSpeed = 1;
-				controls.update(delta);
+				flycontrols.movementSpeed = 1;
+				flycontrols.update(delta);
 			}
 
 			rendererCSS.render(scene, camera);
 			renderer.render(scene, camera);
 
-		}
+        }
 		var mouseobj;
 		function checkCam() {
 
@@ -674,7 +707,7 @@ var ThreeML = function (element) {
 					if (!mouseobj) {
 						mouseobj = new THREE.Object3D();
 						camera.lookAt(mouseobj);
-					}
+                    }
 					var raycaster = new THREE.Raycaster();
 					var mouse = getTheMousePos();
 					raycaster.setFromCamera(mouse, camera);
@@ -683,12 +716,12 @@ var ThreeML = function (element) {
 					raydirection.multiplyScalar(10);
 					p.add(raydirection)
 					mouseobj.position.set(p.x, p.y, p.z);
-
+					
 				}
 
 				return
-			}
-			if (navigating != CameraMode.FIXED) {
+            }
+				if (navigating != CameraMode.FIXED) {
 				var lmousePos = mousePos;
 
 				if (lmousePos && defaultLookat) {
@@ -703,14 +736,14 @@ var ThreeML = function (element) {
 					var fact = 0.05;
 					x = -fact * x;
 					y = fact * y;
-
+					
 					var speedx = (x ** 2) ** 2 / (window.screen.width ** 2) ** 2;
 					var speedy = (y ** 2) ** 2 / (window.screen.height ** 2) ** 2;
 					if ((camera.rotation.x > cameraMaxXangle && y < 0) || (camera.rotation.x < -cameraMaxXangle && y > 0)) {
 						y = 0;
 					}
 					if ((navigating == CameraMode.LOOKAT) && ((camera.rotation.y > cameraMaxXangle && x > 0) || (camera.rotation.y < -cameraMaxXangle && x < 0))) {
-						if (camera.rotation.y > cameraMaxYangle || camera.rotation.y < -cameraMaxYangle) {
+						if (camera.rotation.y > cameraMaxYangle || camera.rotation.y < -cameraMaxYangle ) {
 							x = 0;
 						}
 						else if (Math.abs(camera.rotation.y) > cameraMaxXangle) {
@@ -743,7 +776,7 @@ var ThreeML = function (element) {
 			var cameraPosition = camera.position.clone();               // camera original position
 			var cameraRotation = camera.rotation.clone();               // camera original rotation
 			var cameraQuaternion = camera.quaternion.clone();           // camera original quaternion
-			var dummyObject = new THREE.Object3D();
+			var dummyObject = new THREE.Object3D();     
 			// set dummyObject's position, rotation and quaternion the same as the camera
 			dummyObject.position.set(cameraPosition.x, cameraPosition.y, cameraPosition.z);
 			dummyObject.rotation.set(cameraRotation.x, cameraRotation.y, cameraRotation.z);
@@ -752,7 +785,7 @@ var ThreeML = function (element) {
 			dummyObject.lookAt(target);
 			// store its quaternion in a variable
 			return dummyObject.quaternion.clone();
-		}
+        }
 
 
 		//Common tags
@@ -764,11 +797,11 @@ var ThreeML = function (element) {
 		}
 		function checkEle(ele, parent) {
 			var name = ele.localName.toLowerCase();
-
+			
 			console.log(name);
-			var tr = parent;
+			var tr=parent;
 			switch (name) {
-
+				
 				case 'camera':
 					return handleCamera(ele, parent);
 					break;
@@ -815,8 +848,8 @@ var ThreeML = function (element) {
 				case 'cylindergeometry':
 					return handleCylinderGeometry(ele, parent);
 					break;
-
-
+					
+					
 				case 'htmlplanegeometry':
 					return handleHtmlPlaneGeometry(ele, parent);
 					break;
@@ -824,7 +857,7 @@ var ThreeML = function (element) {
 					return handleGltfLoader(ele, parent);
 					break;
 				case 'directionallight':
-					return handleDirectionalLight(ele, parent);
+					 return handleDirectionalLight(ele, parent);
 					break;
 				case 'pointlight':
 					return handlePointLight(ele, parent);
@@ -842,7 +875,7 @@ var ThreeML = function (element) {
 				case 'spotlight':
 					return handleSpotLight(ele, parent);
 					break;
-
+					
 				case 'group':
 					tr = handleGroup(ele, parent);
 					break;
@@ -852,8 +885,8 @@ var ThreeML = function (element) {
 					return handleDatGui(ele, parent);
 				case 'media':
 					return handleMediaObject(ele);
-
-
+					
+					
 					break;
 				case 'fog':
 					return handleFog(ele);
@@ -861,7 +894,7 @@ var ThreeML = function (element) {
 					return handleFlyControls(ele);
 				case 'cursor3d':
 					return handleCursor3d(ele);
-
+					
 			}
 			doParseChildren(ele, tr);
 		}
@@ -876,7 +909,7 @@ var ThreeML = function (element) {
 			if (att.suspend && toB(att.suspend) && audioContext) {
 				audioContext.suspend();
 			}
-		}
+        }
 		function activateAudio(obj, att) {
 			if (att.url) {
 				if (!audioContext) {
@@ -893,7 +926,7 @@ var ThreeML = function (element) {
 					obj.sound = {};
 					obj.sound.source = audioContext.createBufferSource();
 					obj.sound.volume = audioContext.createGain();
-
+					
 					if (att.volumetric && toB(att.volumetric)) {
 						var panner = audioContext.createPanner();
 						panner.panningModel = 'HRTF';
@@ -919,7 +952,7 @@ var ThreeML = function (element) {
 					var loop = false;
 					if (att.loop) {
 						loop = toB(att.loop);
-					}
+                    }
 					obj.sound.source.loop = loop;
 
 					// Load a sound file using an ArrayBuffer XMLHttpRequest.
@@ -947,9 +980,9 @@ var ThreeML = function (element) {
 					}
 					else {
 						audioContext.resume();
-					}
-				}
-			}
+                    }
+                }
+            }
 		}
 		function getRandowmName() {
 			return "name_" + Math.random();
@@ -965,7 +998,7 @@ var ThreeML = function (element) {
 				}
 				catch (e) { }
 			}
-		}
+        }
 		function handleDatGui(ele, parent) {
 			var att = getAttributes(ele);
 			if (att.clear && toB(att.clear)) {
@@ -1013,11 +1046,13 @@ var ThreeML = function (element) {
 							folder.add(child.position, 'x').min(-f).max(f).step(0.01);
 							folder.add(child.position, 'y').min(-f).max(f).step(0.01);
 							folder.add(child.position, 'z').min(-f).max(f).step(0.01);
-						}
+                        }
 						if (child.rotation) {
-							folder.add(child.rotation, 'x').min(-Math.PI).max(Math.PI).step(0.01);
-							folder.add(child.rotation, 'y').min(-Math.PI).max(Math.PI).step(0.01);
-							folder.add(child.rotation, 'z').min(-Math.PI).max(Math.PI).step(0.01);
+							var conf = { x: toDg(child.rotation.x), y: toDg(child.rotation.y), z: toDg(child.rotation.z) };
+
+							folder.add(conf, 'x').min(-180).max(180).step(0.01).onChange(function (sv) { child.rotation.x = toR(sv); });
+							folder.add(conf, 'y').min(-180).max(180).step(0.01).onChange(function (sv) { child.rotation.y = toR(sv); });
+							folder.add(conf, 'z').min(-180).max(180).step(0.01).onChange(function (sv) { child.rotation.z = toR(sv); });
 						}
 						if (child.scale) {
 							var cs = child.scale.x;
@@ -1050,9 +1085,9 @@ var ThreeML = function (element) {
 								});
 							}
 							if (child.material.shininess) {
-								var conf = { shininess: toN(child.material.shininess) };
+								var conf = { shininess: toN( child.material.shininess) };
 								folder.add(conf, 'shininess').min(0).max(1000).step(0.1).onChange(function (shininessValue) {
-									child.material.shininess = shininessValue;
+									child.material.shininess=shininessValue;
 								});
 							}
 						}
@@ -1066,14 +1101,14 @@ var ThreeML = function (element) {
 						if (child.fixarr) {
 							var s = child.fixarr.join(' ');
 							var conf = { fixed: s };
-							folder.add(conf, 'fixed');
-						}
-					}
+							folder.add(conf,'fixed');
+                        }
+                  }
 				});
+				
+            }
 
-			}
-
-		}
+        }
 
 		function handleLine(ele, parent) {
 			var att = getAttributes(ele);
@@ -1108,7 +1143,7 @@ var ThreeML = function (element) {
 						var v = handleVector(child);
 						if (v) {
 							geometry.vertices.push(v);
-						}
+                        }
 				}
 			}
 			return geometry;
@@ -1117,8 +1152,8 @@ var ThreeML = function (element) {
 			var att = getAttributes(obj);
 			if (att.val) {
 				return toV(att.val);
-			}
-		}
+            }
+        }
 		function assureLineMaterioal(ele) {
 			for (var n = 0; n < ele.children.length; n++) {
 				var child = ele.children[n];
@@ -1129,7 +1164,7 @@ var ThreeML = function (element) {
 				}
 			}
 			return new THREE.LineBasicMaterial();
-		}
+        }
 		function handleBasciLineMaterial(ele) {
 			var att = getAttributes(ele);
 			var width = att.linewidth ? toN(att.linewidth) : 1;
@@ -1141,7 +1176,7 @@ var ThreeML = function (element) {
 				linewidth: width
 			};
 			return new THREE.LineBasicMaterial(parameters);
-		}
+        }
 		function handleGroup(ele, parent) {
 			var att = getAttributes(ele);
 			var obj = new THREE.Group();
@@ -1154,15 +1189,15 @@ var ThreeML = function (element) {
 				if (!obj.name || obj.name.length == 0) {
 					obj.name = getRandowmName();
 					ele.setAttribute("name", obj.name);
-				}
+                }
 				var f = function () {
 					if (!obj.loaded) {
 						self.loadInGroup(obj.name, obj.url);
 						obj.loaded = true;
+						}
 					}
-				}
 
-
+				
 				obj.updateArray.push(f);
 			}
 			parent.add(obj);
@@ -1190,7 +1225,7 @@ var ThreeML = function (element) {
 					p = att.position;
 				}
 				p = toV(p)
-				showWaitModel(parent, p);
+				showWaitModel(parent, p );
 				const gltfLoader = new GLTFLoader();
 				gltfLoader.load(att.url, (gltf) => {
 					const root = gltf.scene;
@@ -1210,9 +1245,9 @@ var ThreeML = function (element) {
 					//var wp = new THREE.Vector3();
 					//ch.getWorldPosition(wp);
 					//console.log(wp.x + ';' + wp.y + ';' + wp.z);
-				}
-			}
-		}
+                }
+            }
+        }
 		function meshFromBoundingBox(bbox) {
 			var h = bbox.max.y - bbox.min.y;
 			var w = bbox.max.x - bbox.min.x;
@@ -1224,11 +1259,11 @@ var ThreeML = function (element) {
 				opacity: 0.5,
 				transparent: true,
 			});
-
+			
 			var obj = new THREE.Mesh(b, material);
 			obj.visible = false;
 			return obj;
-		}
+        }
 		function handleSkyBox(ele) {
 			{
 				var att = getAttributes(ele);
@@ -1244,7 +1279,7 @@ var ThreeML = function (element) {
 				}
 				else {
 					scene.background = '';
-				}
+                }
 			}
 		}
 
@@ -1273,6 +1308,20 @@ var ThreeML = function (element) {
 			div_h.appendChild(img);
 			return div_h;
 		}
+		let hasYoutubeApi = false;
+		function checkYoutubeApi() {
+
+			if (!hasYoutubeApi) {
+				//var tag = document.createElement('script');
+				//tag.src = "https://www.youtube.com/player_api";
+				//var firstScriptTag = document.getElementsByTagName('script')[0];
+				//firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+				hasYoutubeApi = true;
+			}
+
+
+		}
+
 		function handleHtmlPlaneGeometry(ele, parent) {
 			var bgc = undefined;
 			var att = getAttributes(ele);
@@ -1281,14 +1330,17 @@ var ThreeML = function (element) {
 				if (tobj) {
 					console.log('Duplicate attempt to initiate ' + att.name + '.');
 					return tobj;
-				}
+                }
 			}
 			var holder = new THREE.Group();
 			parent.add(holder);
 			if (ele.innerHTML) {
 				att.html = ele.innerHTML.replace('<!--', '').replace('-->', '');
-			}
+            }
 			const div = document.createElement('div');
+			if (att.videoId) {
+				div.setAttribute("ID", videoId);
+            }
 			var dw = 1920;
 			var dh = 1080;
 			var w = dw;
@@ -1299,7 +1351,7 @@ var ThreeML = function (element) {
 			var panelbar = true;
 			if (att.panelbar) {
 				panelbar = toB(att.panelbar);
-			}
+				}
 
 			if (att.width) {
 				w = att.width;
@@ -1308,20 +1360,20 @@ var ThreeML = function (element) {
 			if (att.height) {
 				h = att.height;
 				var corr = panelbar ? 0 : panelBarHeight;
-				hf = (Number(h) - corr) / dh;
+				hf = (Number(h)-corr) / dh;
 			}
 
 			div.style.width = w + 'px';
 			div.style.height = h + 'px';
 
 
-			div.style.backgroundColor = '#000';
+		    div.style.backgroundColor = '#000';
 
 			div.className = 'tml_panel';
 
 			const div_bar = document.createElement('div');
 			div_bar.style.width = '100%';
-			div_bar.style.height = panelBarHeight + 'px';
+			div_bar.style.height = panelBarHeight+'px';
 			div_bar.className = 'tml_bar';
 			if (!(att.custombarcolor && toB(att.custombarcolor))) {
 				//div_bar.style.backgroundColor = bgc;
@@ -1329,16 +1381,14 @@ var ThreeML = function (element) {
 
 			if (!panelbar) {
 				div_bar.style.display = 'none';
-			}
-
-
+            }
 
 			const div_left_menu = document.createElement('div');
 			div_left_menu.style.width = '170px';
 			div_left_menu.style.display = 'inline-block';
 			//home button:
 			const div_hb = getImageBarButton('home', 'Home', Images.Home, bgc);
-
+			
 			div_hb.style.float = 'left';
 			if (att.homebutton) {
 				if (!toB(att.homebutton)) {
@@ -1367,39 +1417,41 @@ var ThreeML = function (element) {
 			div_bar.appendChild(div_h);
 			div.appendChild(div_bar);
 
-			const iframe = document.createElement('iframe');
-			iframe.style.width = w + 'px';
-			iframe.style.height = h + 'px';
-			iframe.style.border = '0px';
-			iframe.name = att.name;
-			iframe.allow = 'autoplay'
-			if (att.scrolling) {
-				var scr = toB(att.scrolling);
-				if (!scr) {
-					iframe.scrolling = 'no';
-				}
-			}
-			if (att.zoom) {
-				iframe.style.zoom = att.zoom;
-			}
 
+			const iframe = document.createElement('iframe');
 			if (att.url) {
+				iframe.style.width = w + 'px';
+				iframe.style.height = h + 'px';
+				iframe.style.border = '0px';
+				iframe.name = att.name;
+				iframe.allow = 'autoplay'
+				if (att.scrolling) {
+					var scr = toB(att.scrolling);
+					if (!scr) {
+						iframe.scrolling = 'no';
+					}
+				}
+				if (att.zoom) {
+					iframe.style.zoom = att.zoom;
+				}
 				iframe.src = att.url;
 				div.appendChild(iframe);
 			}
+			else if (att.videoid) {//youtube
+            }
 			else if (att.html) {
 				//div.style.backgroundColor = '#FFF';
 				//iframe.srcdoc = att.html;
 				const d = document.createElement('div');
 				d.innerHTML = att.html;
-				div.appendChild(d);
+				div.appendChild(d); 
 			}
 			const obj = new CSS3DObject(div);
 
 			holder.add(obj);
 
 			//add transparantplane
-			var geometry = new THREE.PlaneGeometry(1.53 * wf, 0.92 * hf);
+			var geometry = new THREE.PlaneGeometry(1.53*wf,0.92*hf);
 			var material = new THREE.MeshBasicMaterial();
 			material.color.set('black'); //red
 			material.opacity = 0;
@@ -1417,23 +1469,56 @@ var ThreeML = function (element) {
 			obj.scale.set(0.0008 * v.x, 0.0008 * v.y, 0.0008 * v.z);
 			checkevents(ele, holder);
 			//iframe history
-			//iframe.onload = checkIrameHistory(obj, iframe, div_lb, div_rb);
-			iframe.addEventListener("load", function () { checkIrameHistory(obj, iframe, div_lb, div_rb); });
-			div_hb.addEventListener("click", function () { goHome(iframe); });
-			div_lb.addEventListener("click", function () { goPrev(obj, iframe); });
-			div_rb.addEventListener("click", function () { goNext(obj, iframe); });
-			//div_lb.onclick = goPrev(obj, iframe);
-			//div_rb.onclick = goNext(obj, iframe);
+			if (att.url) {
+				iframe.addEventListener("load", function () { checkIrameHistory(obj, iframe, div_lb, div_rb); });
+				div_hb.addEventListener("click", function () { goHome(iframe); });
+				div_lb.addEventListener("click", function () { goPrev(obj, iframe); });
+				div_rb.addEventListener("click", function () { goNext(obj, iframe); });
+			}
+			else if (att.videoid) {
+				//http://jsfiddle.net/4WPmY/6/
+				//checkYoutubeApi();
+				obj.videoid = att.videoid;
+				youtubePlayers.push(obj)
+				div_hb.addEventListener("click", function () {
+					obj.player.playVideo();
+				});
+				
+			}
+
+
+            
+
 			holder.threemlType = 'HtmlPlaneGeometry';
 			return obj;
 
 		};
+
+		function initYoutubePlayers(){
+			for (let n = 0; n < youtubePlayers.length; n++) {
+				let obj = youtubePlayers[n];
+				obj.player = new YT.Player(obj.videoid, {
+					height:'100%',
+					width:  '100%',
+					videoId: obj.videoid,
+				});
+				//obj.player.playVideo();
+			}
+			//document.getElementById('resume').onclick = function () {
+			//	var o = threeml.getScene().getObjectByName('bpOR_HuHRNs');
+			//	o.player.playVideo();
+			//};
+			//document.getElementById('pause').onclick = function () {
+			//	player.pauseVideo();
+			//};
+		
+        }
 		function goHome(ifr) {
 			ifr.src = ifr.src;
-		}
+        }
 		function goPrev(obj, ifr) {
 			//ifr.src = ifr.src;
-			if (obj.history && obj.historyIdx > 1) {
+			if (obj.history && obj.historyIdx >1) {
 				obj.historyIdx--;
 				ifr.src = obj.history[obj.historyIdx];
 			}
@@ -1442,10 +1527,10 @@ var ThreeML = function (element) {
 			if (obj.history && obj.historyIdx < obj.history.length) {
 				obj.historyIdx++;
 				ifr.src = obj.history[obj.historyIdx];
-			}
-		}
+            }
+        }
 		function checkIrameHistory(obj, ifr, lburron, rbutton) {
-			if (!ifr || !ifr.contentWindow || !ifr.contentWindow.location) {
+			if (!ifr || !ifr.contentWindow || !ifr.contentWindow.location ) {
 				return;
 			}
 			try {
@@ -1462,20 +1547,20 @@ var ThreeML = function (element) {
 			if (obj.history.length == obj.historyIdx) {
 				obj.history.push(loc);
 				obj.historyIdx = obj.history.length;
-			}
+            }
 			if (obj.historyIdx > 0) {
 				lburron.style.display = 'inline-block';
 			}
 			else {
 				lburron.style.display = 'none';
-			}
-			if (obj.historyIdx < obj.history.length - 1) {
+            }
+			if (obj.historyIdx < obj.history.length-1) {
 				rbutton.style.display = 'inline-block';
 			}
 			else {
 				rbutton.style.display = 'none';
 			}
-		}
+        }
 		function handleCamera(ele, parent) {
 			var att = getAttributes(ele);
 			if (att.mode) {
@@ -1505,7 +1590,7 @@ var ThreeML = function (element) {
 			if (att.position) {
 				var v = toV(att.position)
 				camera.position.set(v.x, v.y, v.z);
-			}
+            }
 			if (att.rotation) {
 				var v = toV(att.rotation)
 				camera.rotation.set(v.x, v.y, v.z);
@@ -1523,7 +1608,7 @@ var ThreeML = function (element) {
 				}
 			}
 
-		}
+        }
 		function handleRenderer(ele) {
 			var att = getAttributes(ele);
 			if (att.clearcolor) {
@@ -1535,16 +1620,19 @@ var ThreeML = function (element) {
 			var att = getAttributes(ele);
 			if (att.background) {
 				var c = toColor(att.background);
-				scene.background = c;
+				scene.background=c;
+			}
+			if (att.checkzoom) {
+				doCheckZoom = toB(att.checkzoom);
 			}
 		}
 
 		function handlePlaneGeometry(ele, parent) {
 			var att = getAttributes(ele);
-			var geometry = new THREE.PlaneBufferGeometry(1, 1);
+			var geometry = new THREE.PlaneBufferGeometry(1,1);
 			var material = assureGeometryMat(ele);
 			var obj = new THREE.Mesh(geometry, material);
-
+			
 			setCommonAttributes(obj, att);
 			checkevents(ele, obj);
 			parent.add(obj);
@@ -1580,11 +1668,11 @@ var ThreeML = function (element) {
 
 
 
-
+		
 		function handleBoxGeometry(ele, parent) {
 			var att = getAttributes(ele);
 			var geometry = new THREE.BoxBufferGeometry();
-
+			
 			var material = assureGeometryMat(ele);
 			var obj = new THREE.Mesh(geometry, material);
 
@@ -1603,7 +1691,7 @@ var ThreeML = function (element) {
 					geometry = new THREE.BoxBufferGeometry();
 					break;
 				case 'sphere':
-					geometry = new THREE.SphereBufferGeometry(1, 80, 80);
+					geometry = new THREE.SphereBufferGeometry(1,80,80);
 					break;
 				case 'plane':
 					geometry = new THREE.PlaneBufferGeometry();
@@ -1611,7 +1699,7 @@ var ThreeML = function (element) {
 				default:
 					geometry = new THREE.CircleBufferGeometry(1, 32);
 					break;
-			}
+           }
 			var obj = new Reflector(geometry, {
 				clipBias: 0.003,
 				textureWidth: window.innerWidth * window.devicePixelRatio,
@@ -1624,7 +1712,7 @@ var ThreeML = function (element) {
 			parent.add(obj)
 
 
-		}
+        }
 		function handleSphereGeometry(ele, parent) {
 			var att = getAttributes(ele);
 			//radius : Float, widthSegments : Integer, heightSegments : Integer, phiStart : Float, phiLength : Float, thetaStart : Float, thetaLength : Float
@@ -1632,10 +1720,10 @@ var ThreeML = function (element) {
 			var widthSegments = att.widthsegments ? toN(att.widthsegments) : 30;
 			var heightSegments = att.heightsegments ? toN(att.heightsegments) : 30;
 			var phiStart = att.phistart ? toN(att.phistart) : 0;
-			var phiLength = att.philength ? toN(att.philength) : 2 * Math.PI;
+			var phiLength = att.philength ? toN(att.philength) : 2*Math.PI;
 			var thetaStart = att.thetastart ? toN(att.thetastart) : 0;
 			var thetaLength = att.thetalength ? toN(att.thetalength) : Math.PI;
-
+			
 			var geometry = new THREE.SphereBufferGeometry(radius, widthSegments, heightSegments, phiStart, phiLength, thetaStart, thetaLength);
 			var material = assureGeometryMat(ele);
 			var obj = new THREE.Mesh(geometry, material);
@@ -1659,11 +1747,11 @@ var ThreeML = function (element) {
 		}
 		function handleConeGeometry(ele, parent) {
 			var att = getAttributes(ele);
-			var radius = att.radius ? toN(att.radius) : 1;
+			var radius = att.radius ? toN(att.radius): 1;
 			var height = att.height ? toN(att.height) : 1;
 			var radialSegments = att.radialsegments ? toN(att.radialsegments) : 8;
 			var geometry = new THREE.ConeBufferGeometry(radius, height, radialSegments);
-			var material = assureGeometryMat(ele);
+			var material =  assureGeometryMat(ele);
 			var obj = new THREE.Mesh(geometry, material);
 			checkevents(ele, obj);
 			setCommonAttributes(obj, att);
@@ -1677,7 +1765,7 @@ var ThreeML = function (element) {
 			var tube = att.tube ? toN(att.tube) : 0.4;
 			var radialSegments = att.radialsegments ? toN(att.radialsegments) : 8;
 			var tubularSegments = att.tubularsegments ? toN(att.tubularsegments) : 6;
-			var arc = att.arc ? toN(att.arc) : 2 * Math.PI;
+			var arc = att.arc ? toN(att.arc) : 2*Math.PI;
 			var geometry = new THREE.TorusBufferGeometry(radius, tube, radialSegments, tubularSegments, arc);
 			var material = assureGeometryMat(ele);
 			var obj = new THREE.Mesh(geometry, material);
@@ -1689,23 +1777,24 @@ var ThreeML = function (element) {
 		function handleFlyControls(ele) {
 			var att = getAttributes(ele);
 			navigating = CameraMode.FIXED;
-			controls = new FlyControls(camera, container);
+			flycontrols = new FlyControls(camera, container);
 
-			controls.movementSpeed = 3000;
+			flycontrols.movementSpeed = 3000;
 			//controls.domElement = renderer.domElement;
-			controls.rollSpeed = Math.PI / 24;
-			controls.autoForward = false;
-			controls.dragToLook = true;
+			flycontrols.rollSpeed = Math.PI / 24;
+			flycontrols.autoForward = false;
+			flycontrols.dragToLook = true;
 		}
-		function handleCursor3d(ele) {
-
+		function handleCursor3d(ele)
+		{
+			
 			var att = getAttributes(ele);
 			if (att.clear && toB(att.clear)) {
 				cursor3d = undefined;
 			}
 			else {
 				addCursor3d(ele);
-			}
+            }
 		}
 		function addCursor3d(ele) {
 			var geometry = new THREE.SphereBufferGeometry(0.1);
@@ -1717,7 +1806,7 @@ var ThreeML = function (element) {
 			if (ele) {
 				var att = getAttributes(ele);
 				setCommonAttributes(cursor3d, att);
-			}
+            }
 
 			geometry.computeVertexNormals();
 			cursor3d.draggable = true;
@@ -1734,7 +1823,7 @@ var ThreeML = function (element) {
 			var heightSegments = att.heightsegments ? toN(att.heightsegments) : 1;
 			var openEnded = att.openended ? toB(att.openended) : false;
 			var thetaStart = att.thetastart ? toN(att.thetastart) : 0;
-			var thetaLength = att.thetalength ? toN(att.thetalength) : 2 * Math.PI;
+			var thetaLength = att.thetalength ? toN(att.thetalength) : 2*Math.PI;
 
 
 
@@ -1746,7 +1835,7 @@ var ThreeML = function (element) {
 			parent.add(obj);
 			return obj;
 		}
-
+		
 		function handleDirectionalLight(ele, parent) {
 			var att = getAttributes(ele);
 			if (att.name) {
@@ -1761,8 +1850,8 @@ var ThreeML = function (element) {
 				var obj = scene.getObjectByName(att.target);
 				if (obj) {
 					light.target = obj;
-				}
-			}
+                }
+            }
 			checkevents(ele, light);
 			parent.add(light);
 			//var helper = new THREE.DirectionalLightHelper(light);
@@ -1771,7 +1860,7 @@ var ThreeML = function (element) {
 			return light;
 
 		}
-
+		
 		function handleHemisphereLight(ele, parent) {
 			var att = getAttributes(ele);
 			if (att.name) {
@@ -1786,7 +1875,7 @@ var ThreeML = function (element) {
 				light.skyColor = toColor(att.skycolor)
 			}
 			if (att.groundcolor) {
-				light.groundColor = toColor(att.groundcolor)
+				light.groundColor= toColor(att.groundcolor)
 			}
 			checkevents(ele, light);
 			parent.add(light);
@@ -1849,8 +1938,8 @@ var ThreeML = function (element) {
 			}
 
 
-
-		}
+			
+        }
 		function createFontObj(ele, parent, font, att) {
 			var material = assureGeometryMat(ele);
 			var text = '[no text specfied]';
@@ -1940,7 +2029,7 @@ var ThreeML = function (element) {
 			checkevents(ele, obj);
 			parent.add(obj);
 			return obj;
-		}
+        }
 
 		function handleSpotLight(ele, parent) {
 			var att = getAttributes(ele);
@@ -1963,7 +2052,7 @@ var ThreeML = function (element) {
 			if (att.color) {
 				obj.color = toColor(att.color);
 			}
-
+			
 			obj.penumbra = att.penumbra ? toR(att.penumbra) : 0;
 			obj.angle = att.angle ? toR(att.angle) : Math.PI / 3;
 			obj.decay = att.decay ? toN(att.decay) : 1;
@@ -2041,13 +2130,13 @@ var ThreeML = function (element) {
 		//		obj.update = function () {
 		//			for (var n = 0; n < obj.updateArray.length; n++) {
 		//				obj.updateArray[n].call(obj);
-		//                  }
-		//              }
-		//          }
+  //                  }
+  //              }
+  //          }
 		//}//////////////////////////////////////////////////////////////////////
 
 
-		//////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////
 		//var particles = [];
 		function shuffleArray(arr) {
 			for (let i = arr.length - 1; i > 0; i--) {
@@ -2058,18 +2147,18 @@ var ThreeML = function (element) {
 		}
 		////////////////////////////////////// Windarray
 		function CreateWind3DArray(v) {
-			var a = [];
+			var a =[];
 			for (var n = 0; n < 5; n++) {
 				var l = CreateWind2DArray(v);
 				a.push(l);
 			}
 			return a;
 		}
-		function getR(scale = 1) {
-			return Math.random() * 2 * scale - scale;
-		}
+		function getR(scale=1) {
+			return Math.random() * 2 * scale -scale;
+        }
 		function CreateWind2DArray(v) {
-			var a = [];
+			var a =[];
 			for (var n = 0; n < 5; n++) {
 				var b = [];
 				for (var m = 0; m < 5; m++) {
@@ -2078,7 +2167,7 @@ var ThreeML = function (element) {
 				a.push(b);
 			}
 			return a;
-		}
+        }
 		function AddWindlayer(prev) {
 			var arr = CreateWind2DArray(0);
 			for (var n = 0; n < 5; n++) {
@@ -2087,8 +2176,8 @@ var ThreeML = function (element) {
 					var i2 = n < 4 ? n + 1 : 0;
 					var i3 = m > 0 ? m - 1 : 4;
 					var i4 = m < 4 ? m + 1 : 0;
-					var f = getR(0.01);
-					var itp = (prev[n][m] + (prev[i1][m] + prev[i2][m] + prev[n][i3] + prev[n][i4]) / 4) / 2 + f;
+					var f =getR(0.01);
+					var itp = (prev[n][m] + (prev[i1][m] + prev[i2][m] + prev[n][i3] + prev[n][i4]) / 4)/2 + f;
 					itp = itp < -1 ? -1 : itp;
 					itp = itp > 1 ? 1 : itp;
 					arr[n][m] = itp;
@@ -2111,12 +2200,12 @@ var ThreeML = function (element) {
 				return obj.windArray[x][y][z];
 			}
 			return 1;
-		}
+        }
 		function randomUpdateWindArray(arr) {
 			if (Math.random() < 0.03) {
 				updateWindlayer(arr);
-			}
-		}
+            }
+        }
 		function updateWindlayer(arr) {
 			arr.splice(0, 1);
 			var nl = AddWindlayer(arr[3]);
@@ -2131,7 +2220,7 @@ var ThreeML = function (element) {
 			d.style.height = '20px';
 			d.style.display = 'block';
 			d.style.color = 'black';
-			d.style.fontSize = '20px'
+			d.style.fontSize='20px'
 			//d.style.padding = '5px';
 			var obj = new CSS3DObject(d);
 			scene.add(obj)
@@ -2188,14 +2277,14 @@ var ThreeML = function (element) {
 								case SoftBodyConstraint.GRAVITY:
 									if (!gravity) {
 										var factor = c.factor ? c.factor : 1;
-										gravity = obj.worldToLocal((new THREE.Vector3(0, -9.8, 0))).multiplyScalar(0.001 * factor);
+										gravity = obj.worldToLocal((new THREE.Vector3(0, -9.8, 0))).multiplyScalar(0.001 * factor * delta);
 									}
 									pos.add(gravity);
 									break;
 								case SoftBodyConstraint.NORMAL:
 									var normal = getNormal(obj, idx);
 									var factor = c.factor ? c.factor : 1;
-									pos.add(normal.multiplyScalar(0.03 * factor));
+									pos.add(normal.multiplyScalar(0.03 * factor * delta));
 									break;
 								case SoftBodyConstraint.WIND:
 									if (!windForce) {
@@ -2215,16 +2304,16 @@ var ThreeML = function (element) {
 										var period = 1000 * scale;
 										if (period == 0) {
 											period = 100;
-										}
-										var cnow = now + obj.offset * period * 7;
-										const windStrength = Math.cos(cnow / (period * 7)) * 20 + 40;
+                                        }
+										var cnow = now + obj.offset * period*7;
+										const windStrength = Math.cos(cnow / (period*7)) * 20 + 40;
 										windForce = new THREE.Vector3(Math.sin(cnow / (period * 2)), Math.cos(cnow / (period * 3)), Math.sin(cnow / period));
 										windForce.normalize();
-										windForce.multiplyScalar(windStrength * factor * 0.001);
+										windForce.multiplyScalar(windStrength * factor * 0.001 * delta);
 
 									}
 									//checkBoundingVectors(obj, pos);
-									var f = c.useArray ? getWindArrayFactor(obj, pos) : 1;
+									var f = c.useArray? getWindArrayFactor(obj, pos):1;
 									var wf = windForce.clone();
 									pos.add(wf.multiplyScalar(f));
 									break;
@@ -2240,18 +2329,18 @@ var ThreeML = function (element) {
 										var prev_d = p.dist[m];
 										var fact = prev_d - d;
 										var si = Math.sign(fact);
-										v.multiplyScalar(-si * (fact * fact) * factor * 0.1);
+										v.multiplyScalar(-si * (fact * fact) * factor * 0.1 * delta);
 										if (v.length() > 1) {
 											v.normalize().multiplyScalar(1);
-										}
+                                        }
 										pos.add(v);
 									}
 									break;
 								case SoftBodyConstraint.STRUCTURE:
 									//distance
-									var factor = c.factor ? c.factor : 1;
+									var factor = c.factor ? c.factor :1;
 									var cpos = p.startposition;
-									pos.lerp(cpos, factor * 0.01)
+									pos.lerp(cpos, factor * 0.01 * delta)
 									break;
 								case SoftBodyConstraint.FLOOR:
 									//floor
@@ -2281,55 +2370,55 @@ var ThreeML = function (element) {
 												var factor = c.factor ? c.factor : 1;
 												var v = 1 / Math.pow(tdist, 3)
 												//if (v < 1) { v = 1;}
-												pos.lerp(newdragPoint, 0.02 * factor * (v));
+												pos.lerp(newdragPoint, 0.02 * factor * (v) * delta);
 											}
-
+											
 										}
 									}
 									break;
 								case SoftBodyConstraint.GRAB:
-									if (obj.grabMode) {
-										if (cursor3d && cursor3d.visible) {
-											if (!newdragPoint) {
-												newdragPoint = obj.worldToLocal(cursor3d.position.clone());
-											}
-											switch (obj.grabMode) {
-												case GrabMode.NONE:
-													obj.grabMode = GrabMode.INIT;
+										if (obj.grabMode) {
+											if (cursor3d && cursor3d.visible) {
+												if (!newdragPoint) {
+													newdragPoint = obj.worldToLocal(cursor3d.position.clone());
+												}
+												switch (obj.grabMode) {
+													case GrabMode.NONE:
+														obj.grabMode = GrabMode.INIT;
 
-													break;
-												case GrabMode.INIT:
-													var dist = newdragPoint.distanceTo(pos);
-													var factor = c.factor ? c.factor : 1;
-													if (dist < factor) {
-														p.grabVector = pos.clone().sub(newdragPoint);
-													}
-													break;
-												case GrabMode.DRAG:
-													if (p.grabVector) {
-														if (fixHandle == FixHandle.TOGGLE) {
-															p.fixed = !p.fixed;
+														break;
+													case GrabMode.INIT:
+														var dist = newdragPoint.distanceTo(pos);
+														var factor = c.factor ? c.factor : 1;
+														if (dist < factor) {
+															p.grabVector = pos.clone().sub(newdragPoint);
 														}
-														pos = newdragPoint.add(p.grabVector);
-													}
+														break;
+													case GrabMode.DRAG:
+														if (p.grabVector) {
+															if (fixHandle == FixHandle.TOGGLE) {
+																p.fixed = !p.fixed;
+                                                            }
+															pos = newdragPoint.add(p.grabVector);
+														}
+												}
 											}
+											else {
+												obj.grabMode = GrabMode.NONE;
+												p.grabVector = undefined;
+											}
+
 										}
-										else {
-											obj.grabMode = GrabMode.NONE;
-											p.grabVector = undefined;
-										}
 
-									}
-
-
+									
 									break;
 							}
 
 						}
 						if (isNaN(pos.x) || isNaN(pos.y) || isNaN(pos.z) || orig.distanceTo(pos) > 10) {
 							pos = orig;
-
-						}
+							
+                        }
 						for (var m = 0; m < p.index.length; m++) {
 							var i = p.index[m];
 							obj.geometry.attributes.position.setXYZ(i, pos.x, pos.y, pos.z);
@@ -2342,18 +2431,18 @@ var ThreeML = function (element) {
 					}
 					else {
 						obj.fixarr.push(p.index[0]);
-					}
+                    }
 				}
 				if (obj.grabMode && obj.grabMode == GrabMode.INIT) {
 					obj.grabMode = GrabMode.DRAG;
-				}
+                }
 				//console.log(fixarr.join(' '));
 				obj.geometry.attributes.position.needsUpdate = true;
 				obj.geometry.computeVertexNormals();
 				if (obj.windArray) {
 					randomUpdateWindArray(obj.windArray);
-				}
-			}
+                }
+            }
 		}
 
 		function checkRepeat(ele, obj, parent) {
@@ -2375,9 +2464,9 @@ var ThreeML = function (element) {
 			var number = att.number ? toN(att.number) : 1;
 			var maxpos = att.maxposition ? toV(att.maxposition) : new THREE.Vector3();
 			var maxrot = att.maxrotation ? toV(att.maxrotation) : new THREE.Vector3();
-			var minscale = att.minscale ? toV(att.minscale) : new THREE.Vector3(1, 1, 1);
-			var maxscale = att.maxscale ? toV(att.maxscale) : new THREE.Vector3(1, 1, 1);
-
+			var minscale = att.minscale ? toV(att.minscale) : new THREE.Vector3(1,1,1);
+			var maxscale = att.maxscale ? toV(att.maxscale) : new THREE.Vector3(1,1,1);
+			
 			for (var n = 0; n < number; n++) {
 				var nobj = obj.clone();
 				addModelInScene(nobj, parentele, parent);
@@ -2391,14 +2480,14 @@ var ThreeML = function (element) {
 				//scale
 				nobj.scale.set(getRandowScaleP(minscale.x, maxscale.x), getRandowScaleP(minscale.y, maxscale.y), getRandowScaleP(minscale.z, maxscale.z));
 
-			}
+            }
 		}
 		function getRandowScaleP(mins, maxs) {
-			return mins + (maxs - mins) * Math.random();
-		}
+			return mins + (maxs -mins) * Math.random();
+        }
 		function getRandomVector(maxv) {
 			return new THREE.Vector3((0.5 - Math.random()) * maxv.x, (0.5 - Math.random()) * maxv.y, (0.5 - Math.random()) * maxv.z);
-		}
+        }
 		function handleSoftBodies(obj, ele) {
 			if (obj.geometry) {
 				handleSoftBody(obj, ele);
@@ -2406,9 +2495,9 @@ var ThreeML = function (element) {
 			if (obj.children) {
 				for (var n = 0; n < obj.children.length; n++) {
 					handleSoftBodies(obj.children[n], ele);
-				}
-			}
-		}
+                }
+            }
+        }
 		function handleSoftBody(obj, ele) {
 			//var att = getAttributes(ele);
 
@@ -2417,7 +2506,7 @@ var ThreeML = function (element) {
 
 			//fill particles
 			for (var n = 0; n < obj.geometry.index.count; n = n + 3) {
-				var idx0 = obj.geometry.index.array[n];
+				var idx0 =obj.geometry.index.array[n];
 				var idx1 = obj.geometry.index.array[n + 1];
 				var idx2 = obj.geometry.index.array[n + 2];
 				assureParticle(obj, idx0, idx1, idx2);
@@ -2460,7 +2549,7 @@ var ThreeML = function (element) {
 			var c = {
 				factor: factor,
 				scale: scale
-			}
+            }
 			switch (t) {
 				case 'fixed':
 					return handleFilex(obj, att);
@@ -2502,8 +2591,8 @@ var ThreeML = function (element) {
 		function checkCursor3d() {
 			if (!cursor3d) {
 				addCursor3d();
-			}
-		}
+            }
+        }
 		function handleFilex(obj, att) {
 			var tfixedIdx = att.index ? att.index.split(' ') : [];
 			var fixedIdx = [];
@@ -2530,12 +2619,12 @@ var ThreeML = function (element) {
 							obj.geometry.attributes.position.needsUpdate = true;
 							obj.geometry.computeVertexNormals();
 
-						}
+                        }
 						break;
 					}
 				}
 			}
-		}
+        }
 		function isFixed(idx, fixedIdx) {
 			for (var o = 0; o < fixedIdx.length; o++) {
 				if (fixedIdx[o] == idx) {
@@ -2557,10 +2646,10 @@ var ThreeML = function (element) {
 			var y = obj.geometry.attributes.position.array[idx + 1];
 			var z = obj.geometry.attributes.position.array[idx + 2];
 			return new THREE.Vector3(x, y, z);
-		}
+        }
 		function findParticle(obj, pos) {
 			for (var n = 0; n < obj.particles.length; n++) {
-				if (obj.particles[n].startposition.clone().distanceTo(pos) < 0.01) {
+				if (obj.particles[n].startposition.clone().distanceTo(pos)<0.01) {
 					return obj.particles[n];
 				}
 			}
@@ -2596,8 +2685,8 @@ var ThreeML = function (element) {
 			else {
 				if (!hasItem(index, p.index)) {
 					p.index.push(index);
-				}
-			}
+                }
+            }
 			assureChild(p, child0);
 			assureChild(p, child1);
 
@@ -2607,9 +2696,9 @@ var ThreeML = function (element) {
 			for (var n = 0; n < arr.length; n++) {
 				if (arr[n] == item) {
 					return true;
-				}
-			}
-		}
+                }
+            }
+        }
 		//////////////////////////////////////////////////////////////////////////////////////
 		// Copys the world transforms between objects even if the have different parents
 		var copyTransform = (function () {
@@ -2620,7 +2709,7 @@ var ThreeML = function (element) {
 				return destination.quaternion;
 			}
 		})();
-		async function handleMedia(obj, ele) {
+		async  function handleMedia(obj, ele) {
 			var att = getAttributes(ele);
 
 			var f = function () {
@@ -2653,14 +2742,14 @@ var ThreeML = function (element) {
 					}
 				}
 				obj.updateArray.push(f2);
-			}
+            }
 		}
 
 		function handleLink(obj, ele) {
 			var att = getAttributes(ele);
 			if (att.url) {
 				var f = function () {
-
+					
 					if (att.target) {
 						//
 						var iFrameExist = document.querySelector(`iframe[name="${att.target}"]`);
@@ -2674,50 +2763,50 @@ var ThreeML = function (element) {
 								var thandler = eval(att.handler);
 								if (thandler) {
 									handler = thandler;
-								}
-							}
-							handler.loadInTarget(att.target, att.url + '?A=1', replace);
+                                }
+                            }
+							handler.loadInTarget(att.target, att.url+'?A=1', replace);
 						}
 					}
 					else {
 						window.top.location.href = att.url;
-					}
+                    }
 				}
 				addCallbackFunction(obj, f);
-			}
+            }
 
-		}
-		function addCallbackFunction(obj, f, action = 'click') {
+        }
+		function addCallbackFunction(obj, f, action='click') {
 			var cb = makeCallBackObj(f, action);
 			if (!obj.callbackFunctions) {
 				obj.callbackFunctions = [];
 				obj.callback = function (action) {
 					for (var n = 0; n < obj.callbackFunctions.length; n++) {
 						var c = obj.callbackFunctions[n];
-						if (c.f && c.t == action) { c.f(); }
-					}
-				}
+						if (c.f && c.t == action) { c.f();}
+                    }
+                }
 			}
 			obj.callbackFunctions.push(cb);
-		}
-		function handleRemotePresent(obj, att) {
-
-
+        }
+		function handleRemotePresent(obj, att){
+			
+			
 			addCallbackFunction(obj, function () {
-				var remObj = scene.getObjectByName(att.target);
-				if (remObj && remObj.present) {
-					remObj.present(!remObj.presentProp.isPresenting);
-				}
-			});
-
-		}
+					var remObj = scene.getObjectByName(att.target);
+					if (remObj && remObj.present) {
+						remObj.present(!remObj.presentProp.isPresenting);
+					}
+				});
+            
+        }
 
 		function handlePresent(obj, ele) {
 			var att = getAttributes(ele);
 			checkObjectUpdateArray(obj);
 			if (att.target) {
 				return handleRemotePresent(obj, att);
-			}
+            }
 			var speed = 0.01;
 			if (att.speed) {
 				speed = Number(att.speed);
@@ -2729,7 +2818,7 @@ var ThreeML = function (element) {
 			var fromgroup;
 			if (att.fromgroup) {
 				fromgroup = scene.getObjectByName(att.fromgroup);
-			}
+            }
 			obj.presentProp = {};
 
 			obj.presentProp.speed = speed;
@@ -2738,7 +2827,7 @@ var ThreeML = function (element) {
 			obj.presentProp.isPresenting = false;
 			obj.presentProp.isRunning = false;
 			obj.presentProp.forward = new THREE.Vector3(0, 0, 1);
-			obj.presentProp.defaultQuaternion = obj.quaternion.clone();
+			obj.presentProp.defaultQuaternion=obj.quaternion.clone();
 			var f = function () {
 				if (obj.presentProp.isRunning) {
 					obj.presentProp.steps--;
@@ -2748,7 +2837,7 @@ var ThreeML = function (element) {
 					go.quaternion.y = camera.quaternion.y;
 					go.quaternion.z = camera.quaternion.z;
 					go.quaternion.w = camera.quaternion.w;
-
+					
 					go.position.x = camera.position.x;
 					go.position.y = camera.position.y;
 					go.position.z = camera.position.z;
@@ -2769,25 +2858,25 @@ var ThreeML = function (element) {
 						var target = obj.presentProp.defaultPosition.clone();
 						source = obj.position.clone();
 						targetQuaternion = obj.presentProp.defaultQuaternion.clone();
-					}
+                    }
 					var direction = target.clone();
 					direction.sub(source);
 					direction.normalize();
-					direction.multiplyScalar(speed);
+					direction.multiplyScalar(speed * delta);
 
 					obj.position.add(direction);
 
-					obj.quaternion.slerp(targetQuaternion, 2 * obj.presentProp.speed)
+					obj.quaternion.slerp(targetQuaternion, 2 * obj.presentProp.speed * delta)
 					var distanceTo = obj.position.distanceTo(target);
 					//console.log(target.x + ' ' + target.y + ' ' + target.z + '---- ' + source.x + ' ' + source.y + ' ' + source.z);
 					if (distanceTo < 0.1) {
 						obj.position.set(target.x, target.y, target.z);
 						obj.presentProp.isRunning = false;
 						console.log(obj.name + ' stopped');
-
+						
 					}
 					parent.remove(go);
-				}
+                }
 			}
 			obj.updateArray.push(f);
 			obj.present = function (doPresent) {
@@ -2796,29 +2885,29 @@ var ThreeML = function (element) {
 						if (obj.name != fromgroup.children[n].name && fromgroup.children[n].presentProp && fromgroup.children[n].presentProp.isPresenting) {
 							fromgroup.children[n].present(false);
 						}
-					}
-				}
+                    }
+                }
 				obj.presentProp.isPresenting = doPresent;
 				obj.presentProp.isRunning = true;
 				if (obj.children.length > 0) {
-					obj.children[0].element.style.zIndex = obj.presentProp.isPresenting ? 10 : canvaszindex - 1;
+					obj.children[0].element.style.zIndex = obj.presentProp.isPresenting ? 10 : canvaszindex-1;
 				}
-
+				
 
 			}
 			if (obj.children.length > 0 && obj.children[0].element) { //is htmlPanel
 				var c = obj.children[0].element.children;
 				if (c && c.length > 0 && c[0].children.length > 0 && c[0].children[1].name == 'handle') {
 					var d = c[0].children[1];
-					if (att.presentfromgroup == 'true' && obj.parent.name && obj.name) {
+					if (att.presentfromgroup=='true' && obj.parent.name && obj.name) {
 						d.addEventListener("click", function () {
 							if (!obj.presentProp.isPresenting) {
 								threeml.presentFromGroup(obj.parent.name, obj.name);
 							}
 							else {
 								obj.present(!obj.presentProp.isPresenting);
-							}
-
+                            }
+							
 						});
 					}
 					else {
@@ -2840,18 +2929,18 @@ var ThreeML = function (element) {
 					obj.present(!obj.presentProp.isPresenting);
 				});
 				//obj.callback = function () {  }
-			}
+            }
 			if (att.atstart == 'true') {
 				obj.presentProp.isPresenting = true;
 				obj.presentProp.isRunning = true;
 				if (obj.children.length > 0) {
 					obj.children[0].element.style.zIndex = 10;
 				}
-			}
+            }
 		}
 		function handleDraggable(obj, child) {
 			obj.draggable = true;
-		}
+        }
 		function handleWalk(obj, ele) {
 			obj.walk = true;
 		}
@@ -2868,13 +2957,13 @@ var ThreeML = function (element) {
 					}
 					else {
 						clearHover();
-					}
+                    }
 				}
 				if (!t && att.target) {
-					t = scene.getObjectByName(att.target);
+					t = scene.getObjectByName( att.target);
 				}
 
-				if (o) {
+				if (o ) {
 					if (!o.hoveractions) {
 						o.hoveractions = '';
 					}
@@ -2893,7 +2982,7 @@ var ThreeML = function (element) {
 							o.hoveractions += 'scale;';
 						}
 						o.scaled = true;
-					}
+                    }
 					else if (action == 'color' && !o.colored) {
 						if (!o.defaultColor) {
 							o.defaultColor = o.material.color.clone();
@@ -2909,16 +2998,16 @@ var ThreeML = function (element) {
 						o: o,
 						t: t
 					}
-
+					
 				}
 
-			}
+            }
 
 			addCallbackFunction(obj, f, 'hover')
 		}
 		function handleActions(obj, ele) {
 			assureActionProp(obj, ele);
-
+			
 			for (var n = 0; n < ele.children.length; n++) {
 				var child = ele.children[n];
 				var name = child.localName;
@@ -2926,7 +3015,7 @@ var ThreeML = function (element) {
 					case 'action':
 						handleAction(obj, child);
 						break;
-				}
+                }
 			}
 		}
 		function assureActionProp(obj, ele) {
@@ -2942,24 +3031,24 @@ var ThreeML = function (element) {
 						if (obj.act.actions.length > obj.act.current) {
 							var r = obj.act.actions[obj.act.current].call(obj);
 							if (r) {
-								if (obj.act.actions.length > obj.act.current + 1) {
+								if (obj.act.actions.length > obj.act.current+1) {
 									obj.act.current++;
 								}
 								else if (att.repeat) {
 									obj.act.current = 0;
-								}
+                                }
 								else {
 									obj.act.active = false;
-								}
-							}
-						}
-					}
+                                }
+                            }
+                        }
+                    }
 				}
 				obj.updateArray.push(f);
 			}
 			if (att.repeat) {
 				obj.act.repeat = toB(att.repeat);
-			}
+            }
 		}
 
 		function getTarget(targetName) {
@@ -2970,12 +3059,12 @@ var ThreeML = function (element) {
 			if (obj.children) {
 				for (var i = 0; i < obj.children.length; i++) {
 					setVisible(obj.children[i], visible);
-				}
-			}
-		}
+                }
+            }
+        }
 		function handleAction(obj, ele) {
 			var att = getAttributes(ele);
-			var speed = att.speed ? toN(att.speed) : 0.01;
+			var speed = att.speed?toN(att.speed): 0.01;
 			var targetName = att.target;
 			var target;
 			if (targetName) {
@@ -2998,7 +3087,7 @@ var ThreeML = function (element) {
 						var position = att.position ? toV(att.position) : t.position.clone();
 						var scale = att.scale ? toV(att.scale) : t.scale.clone();
 						var color = att.color ? toColor(att.color) : t.color
-						var intensity = att.intensity ? toN(att.intensity) : undefined
+						var intensity = att.intensity ? toN(att.intensity) :undefined
 
 						var f = function () {
 							//visible
@@ -3017,7 +3106,7 @@ var ThreeML = function (element) {
 							var s = scale.distanceTo(t.scale);
 							//color
 							var cr = true;
-
+							
 							if (color && (t.material && t.material.color || t.color)) {
 								var co = t.color ? t.color : t.material.color;
 								co.lerp(color, speed);
@@ -3026,7 +3115,7 @@ var ThreeML = function (element) {
 								var v2 = new THREE.Vector3(color.r, color.g, color.b);
 
 								var d = v1.distanceTo(v2);
-								cr = d < 0.02;
+								cr= d < 0.02;
 							}
 							//intensity
 							var int = true;
@@ -3037,9 +3126,9 @@ var ThreeML = function (element) {
 									int = true;
 								}
 								else {
-									obj.intensity -= Math.sign(dif) * speed * 1;
+									obj.intensity -= Math.sign(dif)* speed * 1;
 									int = false;
-								}
+                                }
 							}
 
 							return a < 0.02 && p < 0.02 && s < 0.02 && cr && int;
@@ -3055,7 +3144,7 @@ var ThreeML = function (element) {
 						obj.act.actions.push(f);
 						var f2 = function () {
 							obj.act.active = true;
-						}
+                        }
 						addCallbackFunction(t, f2);
 						break;
 					case 'pause':
@@ -3064,22 +3153,22 @@ var ThreeML = function (element) {
 							if (!obj.act.pause || obj.act.pause <= 0) {
 								obj.act.pause = 1;
 							}
-							obj.act.pause -= speed * 0.1;
+							obj.act.pause -= speed*0.1;
 							return obj.act.pause < 0;
 						}
 
 						obj.act.actions.push(f);
 						break;
-				}
-			}
+               }
+            }
 		}
 		function makeCallBackObj(f, t) {
 			var c = {
 				f: f,
-				t: t
+				t:t
 			}
 			return c;
-		}
+        }
 		function handleFog(ele) {
 			var att = getAttributes(ele);
 			//const near = att.near ? toN(att.near) : 0.1;
@@ -3106,8 +3195,8 @@ var ThreeML = function (element) {
 				obj.updateArray.push(f);
 			}
 			else {
-				console.log("Object '" + att.target + "' not found as suitable target.")
-			}
+				console.log("Object '" + att.target+"' not found as suitable target.")
+            }
 		}
 		function handleBlink(obj, ele) {
 			var att = getAttributes(ele);
@@ -3133,7 +3222,7 @@ var ThreeML = function (element) {
 					if (random) {
 						obj.blink.fact = Math.random();
 					}
-				}
+                }
 			}
 			obj.updateArray.push(f);
 		}
@@ -3164,7 +3253,7 @@ var ThreeML = function (element) {
 					|| (obj.pulse.speed < 0 && obj.pulse.factor < 1)) {
 					obj.pulse.speed = -obj.pulse.speed;
 				}
-
+				
 
 			}
 			obj.updateArray.push(f);
@@ -3183,9 +3272,9 @@ var ThreeML = function (element) {
 			};
 			obj.updateArray.push(f);
 		}
-
+	
 		function assureGeometryMat(ele) {
-
+		
 			for (var n = 0; n < ele.children.length; n++) {
 				var child = ele.children[n];
 				var name = child.localName;
@@ -3207,109 +3296,109 @@ var ThreeML = function (element) {
 			}
 			return att;
 		}
-
-		function handleMeshPhonMaterial(ele) {
-			var mat;
-			var att = getAttributes(ele);
-
-			if (att.id) {
-				mat = findMaterial(att.id);
-				if (!mat) {
-					mat = new THREE.MeshPhongMaterial();
-					mat.name = att.id;
-					materials.push(mat);
-				}
-			}
-			else {
+		
+	function handleMeshPhonMaterial(ele) {
+		var mat;
+		var att = getAttributes(ele);
+		
+		if (att.id) {
+			mat = findMaterial(att.id);
+			if (!mat) {
 				mat = new THREE.MeshPhongMaterial();
-			}
-
-			if (att.color) {
-				var c = toV(att.color);
-				mat.color.setRGB(c.x, c.y, c.z);
-			}
-			mat.flatShading = false;
-			if (att.emissive) {
-				var color = att.color ? att.color : "1 1 1";
-				var e = toV(color);
-				mat.emissive.setRGB(e.x, e.y, e.z);
-				if (att.emissiveintensity) {
-					mat.emissiveIntensity = toN(att.emissiveintensity);
-				}
-			}
-			if (att.url) {
-				try {
-					const loader = new THREE.TextureLoader();
-					let map = loader.load(att.url);
-					if (att.map) {
-						var v = toV2(att.map);
-						map.wrapS = THREE.RepeatWrapping;
-						map.wrapT = THREE.RepeatWrapping;
-						map.repeat.set(v.x, v.y);
-					}
-					mat.map = map
-				}
-				catch (x) { console.log(x); }
-			}
-			if (att.normalmap) {
-				try {
-					const loader2 = new THREE.TextureLoader();
-					mat.normalMap = loader2.load(att.normalmap);
-				}
-				catch (x) { console.log(x); }
-			}
-			if (att.fog && !toB(att.fog)) {
-				mat.fog = false;
-			}
-			if (att.shininess) {
-				mat.shininess = toN(att.shininess);
-			}
-			if (att.specular) {
-				mat.specular = toColor(att.specular);
-			}
-			if (att.envmap && toB(att.envmap)) {
-				if (!cubeCamera) {
-					cubeRenderTarget = new THREE.WebGLCubeRenderTarget(128, {
-						format: THREE.RGBFormat,
-						generateMipmaps: true,
-						minFilter: THREE.LinearMipmapLinearFilter,
-						encoding: THREE.sRGBEncoding
-					});
-					cubeCamera = new THREE.CubeCamera(1, 10000, cubeRenderTarget);
-					scene.add(cubeCamera);
-				}
-				mat.envMap = cubeRenderTarget.texture;
-				//mat.color.offsetHSL(0.1, - 0.1, 0);
-			}
-			mat.blending = THREE.NoBlending;
-			if (att.side) {
-				switch (att.side.toLowerCase()) {
-					case 'frontside':
-						mat.side = THREE.FrontSide;
-						break;
-					case 'backside':
-						mat.side = THREE.BackSide;
-						break;
-					case 'doubleside':
-						mat.side = THREE.DoubleSide;
-						break;
-				}
-			}
-
-			return mat;
-		}
-		var cubeRenderTarget;
-		var cubeCamera;
-		function findMaterial(name) {
-			for (var n = 0; n < materials.length; n++) {
-				if (materials[n].name == name) {
-					return materials[n];
-				}
+				mat.name = att.id;
+				materials.push(mat);
 			}
 		}
-
-
-		///////////////////////////////////////////////////////////////////////
+		else {
+			mat = new THREE.MeshPhongMaterial();
+		}
+		
+		if (att.color) {
+			var c = toV(att.color);
+			mat.color.setRGB(c.x, c.y, c.z);
+		}
+		mat.flatShading = false;
+		if (att.emissive) {
+			var color = att.color ? att.color : "1 1 1";
+			var e = toV(color);
+			mat.emissive.setRGB(e.x, e.y, e.z);
+			if (att.emissiveintensity) {
+				mat.emissiveIntensity = toN(att.emissiveintensity);
+			}
+        }
+		if (att.url) {
+			try {
+				const loader = new THREE.TextureLoader();
+				let map = loader.load(att.url);
+				if (att.map) {
+					var v = toV2(att.map);
+					map.wrapS = THREE.RepeatWrapping;
+					map.wrapT = THREE.RepeatWrapping;
+					map.repeat.set(v.x, v.y);
+                }
+				mat.map = map
+			}
+			catch (x) {  console.log(x); }
+		}
+		if (att.normalmap) {
+			try {
+				const loader2 = new THREE.TextureLoader();
+				mat.normalMap = loader2.load(att.normalmap);
+			}
+			catch (x) { console.log(x); }
+		}
+		if (att.fog && !toB(att.fog)) {
+			mat.fog = false;
+		}
+		if(att.shininess){
+			mat.shininess = toN(att.shininess);
+		}
+		if (att.specular) {
+			mat.specular = toColor(att.specular);
+		}
+		if (att.envmap && toB(att.envmap)) {
+			if (!cubeCamera) {
+				cubeRenderTarget = new THREE.WebGLCubeRenderTarget(128, {
+					format: THREE.RGBFormat,
+					generateMipmaps: true,
+					minFilter: THREE.LinearMipmapLinearFilter,
+					encoding: THREE.sRGBEncoding
+				});
+				cubeCamera = new THREE.CubeCamera(1, 10000, cubeRenderTarget);
+				scene.add(cubeCamera);
+			}
+			mat.envMap = cubeRenderTarget.texture;
+			//mat.color.offsetHSL(0.1, - 0.1, 0);
+        }
+		mat.blending = THREE.NoBlending;
+		if (att.side) {
+			switch (att.side.toLowerCase()) {
+				case 'frontside':
+					mat.side = THREE.FrontSide;
+					break;
+				case 'backside':
+					mat.side = THREE.BackSide;
+					break;
+				case 'doubleside':
+					mat.side = THREE.DoubleSide;
+					break;
+            }
+        }
+		
+		return mat;
+	}
+	var cubeRenderTarget;
+	var cubeCamera;
+	function findMaterial(name) {
+		for (var n = 0; n < materials.length; n++) {
+			if (materials[n].name == name) {
+				return materials[n];
+			}
+		}
+	}
+		
+	
+	///////////////////////////////////////////////////////////////////////
 
 		//End common tags
 		//Shape
@@ -3328,8 +3417,8 @@ var ThreeML = function (element) {
 		}
 		function toRotV(val) {
 			var v = toV(val);
-			return new THREE.Vector3(toR(v.x), toR(v.y), toR(v.z));
-		}
+			return new THREE.Vector3( toR(v.x), toR(v.y), toR(v.z));
+        }
 		function toV(val) {
 			var arr = val.split(' ');
 			var x = arr.length > 0 ? tryParseNumber(arr[0]) : 0;
@@ -3347,7 +3436,7 @@ var ThreeML = function (element) {
 				return t;
 			}
 			return 0;
-		}
+        }
 		function addTransform(ele, att, parent) {
 			var group = new THREE.Group();
 			parent.add(group);
@@ -3387,7 +3476,7 @@ var ThreeML = function (element) {
 			if (att.target) {
 				obj.target = Number(att.target);
 			}
-
+		
 			if (att.color) {
 				obj.color = toColor(att.color);
 			}
@@ -3399,7 +3488,7 @@ var ThreeML = function (element) {
 						if (node.isMesh) { node.castShadow = true; }
 
 					});
-				}
+                }
 			}
 			if (att.receiveshadow) {
 				obj.receiveShadow = toB(att.receiveshadow);
@@ -3417,10 +3506,10 @@ var ThreeML = function (element) {
 			}
 			if (att.normalize) {
 				handelNormalize(obj);
-			}
+            }
 			//if (obj && obj.material && obj.material.envMap && cubeCamera) {
 			//	//obj.add(cubeCamera);
-			//         }
+   //         }
 		}
 		function handelNormalize(obj) {
 			var bbox = new THREE.Box3().setFromObject(obj);
@@ -3439,10 +3528,10 @@ var ThreeML = function (element) {
 			}
 			//v.multiplyScalar(0.5);
 
-		}
+        }
 		function toColor(color) {
 			var c = new THREE.Color();
-			if (color.indexOf('#') == 0) {
+			if (color.indexOf('#') == 0 || color.indexOf('#') == 0) {
 				c = new THREE.Color(color)
 			}
 			else {
@@ -3451,19 +3540,19 @@ var ThreeML = function (element) {
 				c.setRGB(v.x, v.y, v.z);
 			}
 			return c;
-		}
+        }
 		function isNo(n) {
 			return !isNaN(parseFloat(n)) && isFinite(n);
 		}
-		function toN(n, def = 1) {
+		function toN(n, def=1) {
 			if (n && isNo(n)) {
-				return Number(n);
+				return Number( n);
 			}
 			return def;
-		}
+        }
 		function toB(b) {
 			if (b) {
-				if (b == 'true' || b == '1') {
+				if (b == 'true' || b=='1') {
 					b = true;
 				}
 				else if (b == 'false' || b == '0') {
@@ -3471,12 +3560,12 @@ var ThreeML = function (element) {
 				}
 			}
 			return b;
-		}
+        }
 		function toR(degrees) {
 			return degrees * Math.PI / 180;
 		}
 		function toDg(radials) {
-			return 180 * radials / Math.PI
+			return 180 * radials /Math.PI
 		}
 
 		///////////////////////
@@ -3631,20 +3720,20 @@ var ThreeML = function (element) {
 		const tb = '   ';
 		function createTreePage() {
 			var h = '';
-			h += '<html>' + lf;
+			h += '<html>'+lf;
 			h += tb + '<head>' + lf;
 			h += tb + tb + '<style>' + lf;
 			h += tb + tb + tb + '#container {' + lf;
 			h += tb + tb + tb + tb + 'pointer-events: none;' + lf;
 			h += tb + tb + tb + '}' + lf;
 			h += tb + tb + '</style>' + lf;
-			h += tb + '</head>' + lf;
-			h += tb + '<body>' + lf;
+			h += tb +'</head>' + lf;
+			h += tb +'<body>' + lf;
 			h += tb + tb + '<div id="container">' + lf;
 			h += tb + tb + tb + '<three>' + lf;
-			h += checkChildren(scene, 3);
-			h += tb + tb + tb + '</three>' + lf;
-			h += tb + tb + '</div>' + lf;
+			h += checkChildren(scene,3);
+			h += tb + tb + tb + '</three>' + lf; 
+			h += tb + tb + '</div>' + lf; 
 
 			h += tb + '<script>' + lf;
 			h += tb + tb + 'var threeml;' + lf;
@@ -3655,7 +3744,7 @@ var ThreeML = function (element) {
 			h += tb + tb + 'threeml = new ThreeML();' + lf;
 			h += tb + tb + 'threeml.parseThree();' + lf;
 			h += tb + '</script>' + lf;
-			h += tb + '</body>' + lf;
+			h += tb +'</body>' + lf;
 			h += '</html>';
 			h = h.replaceAll(lf + lf, lf);
 
@@ -3663,7 +3752,7 @@ var ThreeML = function (element) {
 		}
 
 
-		function downloadBlob(content, fileName, contentType) {
+		function downloadBlob (content, fileName, contentType) {
 			if (Blob !== undefined) {
 
 				var blob = new Blob(["\ufeff", content], { type: contentType });
@@ -3697,10 +3786,10 @@ var ThreeML = function (element) {
 			if (maindiv && maindiv.childNodes && maindiv.childNodes.length > 1) {
 				var iframe = maindiv.childNodes[1];
 				return iframe;
-			}
+            }
 
-		}
-		function checkChildren(obj, level, isThreeMParent = false) {
+        }
+		function checkChildren(obj,level, isThreeMParent=false) {
 			var h = '';
 			level++;
 			var tabs = '';
@@ -3708,9 +3797,9 @@ var ThreeML = function (element) {
 				tabs += tb;
 			}
 			var tagName = obj.type;
-			if (isThreeMParent && (tagName == 'Mesh' || tagName == 'Object3D')) {
+			if (isThreeMParent && (tagName == 'Mesh' || tagName == 'Object3D')){
 				tagName = undefined;
-			}
+            }
 			if (tagName && tagName.length > 0 && tagName != 'Scene') {
 				if (tagName == 'Mesh' && obj.geometry && obj.geometry.type) {
 					tagName = obj.geometry.type;
@@ -3718,7 +3807,7 @@ var ThreeML = function (element) {
 				var url;
 				var zoom;
 				if (obj.url) {
-					url = obj.url;
+					url=obj.url;
 				}
 				if (obj.threemlType) {
 					tagName = obj.threemlType;
@@ -3729,13 +3818,13 @@ var ThreeML = function (element) {
 							url = ifr.src;
 							if (ifr.style.zoom != "1") {
 								zoom = Number(ifr.style.zoom);
-							}
-						}
+                            }
+                        }
 					}
-
+					
 				}
-
-				h += tabs + '<' + tagName;
+				
+				h += tabs+ '<' + tagName;
 				if (obj.name) {
 					h += ' name="' + obj.name + '"';
 				}
@@ -3743,14 +3832,14 @@ var ThreeML = function (element) {
 					h += ' url="' + url + '"';
 				}
 				if (zoom) {
-					h += ' zoom="' + round(zoom) + '"';
+					h += ' zoom="' + round( zoom) + '"';
 				}
-				if (!obj.visible) {
+				if (!obj.visible ) {
 					h += ' visible="false"';
 				}
-				if (obj.position && obj.position.length() > 0) {
+				if (obj.position && obj.position.length()>0) {
 					h += ' position=' + Vector3ToString(obj.position);
-				}
+                }
 				if (obj.rotation && (obj.rotation.x != 0 || obj.rotation.y != 0 || obj.rotation.z != 0)) {
 					h += ' rotation=' + Vector3ToString(obj.rotation, 180);
 				}
@@ -3758,17 +3847,17 @@ var ThreeML = function (element) {
 					h += ' scale=' + Vector3ToString(obj.scale);
 				}
 
-				if (obj.intensity && obj.intensity != 1) {
+				if (obj.intensity && obj.intensity!=1) {
 					h += ' intensity="' + round(obj.intensity) + '"';
-				}
+                }
 				if (obj.target && obj.target.name) {
 					h += ' target="' + obj.target.name + '"';
 				}
 				if (obj.castShadow) {
 					h += ' castShadow="true"';
 				}
-				if (obj.recieveShadow) {
-					h += ' recieveShadow="true"';
+				if (obj.receiveShadow) {
+					h += ' receiveShadow="true"';
 				}
 				if (obj.color && (obj.color.r != 1 || obj.color.g != 1 || obj.color.b != 1)) {
 					h += ' color=' + ColorToString(obj.color);
@@ -3782,20 +3871,20 @@ var ThreeML = function (element) {
 					if (mat.color) {
 						h += ' color=' + ColorToString(mat.color);
 					}
-					if (mat.emissive && (mat.emissive.r != 0 || mat.emissive.g != 0 || mat.emissive.b != 0)) {
+					if (mat.emissive && (mat.emissive.r != 0 || mat.emissive.g != 0 || mat.emissive.b != 0 )) {
 						h += ' emissive=' + ColorToString(mat.emissive);
 					}
 					if (mat.map && mat.map.image && mat.map.image.src && mat.map.image.src.length > 0) {
 						h += ' url="' + mat.map.image.src + '"';
-					}
+                    }
 					h += '></' + matName + '>' + lf;
-				}
+                }
 				if (obj.presentProp) {
 					var pp = obj.presentProp
 					var tagtName = 'present';
 					h += lf + tabs + tb + '<' + tagtName;
 					if (pp.speed) {
-						h += ' speed="' + pp.speed + '"';
+						h += ' speed="' + pp.speed+'"';
 					}
 					if (pp.cameradistance) {
 						h += ' cameradistance="' + pp.cameradistance + '"';
@@ -3804,7 +3893,7 @@ var ThreeML = function (element) {
 				}
 				if (obj.draggable) {
 					h += tabs + tb + '<draggable></draggable>' + lf;
-				}
+                }
 			}
 			if (obj.children) {
 				if (obj.children.length > 0) {
@@ -3812,24 +3901,24 @@ var ThreeML = function (element) {
 				}
 				else {
 					tabs = '';
-				}
+                }
 				for (var i = 0; i < obj.children.length; i++) {
-					h += checkChildren(obj.children[i], level, isThreeMParent);
+					h += checkChildren(obj.children[i],level, isThreeMParent);
 				}
 			}
 			if (tagName && tagName.length > 0 && tagName != 'Scene') {
-				h += tabs + '</' + tagName + '>' + lf;
+				h += tabs+ '</' + tagName + '>'+lf;
 			}
 			return h;
 		}
 		function ColorToString(c) {
 			var v = new THREE.Vector3(c.r, c.g, c.b);
 			return Vector3ToString(v);
-		}
-		function Vector3ToString(v, fact = 1) {
+        }
+		function Vector3ToString(v, fact=1) {
 			if (v.x == v.y && v.y == v.z) {
 				return '"' + round(v.x * fact) + '"';
-			}
+            }
 			return '"' + round(v.x * fact) + ' ' + round(v.y * fact) + ' ' + round(v.z * fact) + '"';
 		}
 		function round(n) {
@@ -3837,12 +3926,12 @@ var ThreeML = function (element) {
 				return n;
 			}
 			return n.toFixed(2);
-		}
+        }
 	}
 	const FixHandle = {
 		NONE: 'none',
 		TOGGLE: 'toggle'
-	}
+    }
 	const SoftBodyConstraint = {
 		FIXED: 'fixed',
 		WIND: 'wind',
@@ -3857,10 +3946,10 @@ var ThreeML = function (element) {
 	const GrabMode = {
 		NONE: 'none',
 		INIT: 'init',
-		DRAG: 'drag'
+		DRAG:'drag'
 
 
-	}
+    }
 	const CameraMode = {
 		FIXED: 'fixed',
 		LOOKAT: 'lookat',
